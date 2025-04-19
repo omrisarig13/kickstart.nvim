@@ -1,3 +1,4 @@
+-- Intro {{{
 --[[
 
 =====================================================================
@@ -83,6 +84,7 @@ I hope you enjoy your Neovim journey,
 
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
+-- Intro }}}
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -93,11 +95,10 @@ vim.g.maplocalleader = ' '
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = false
 
--- [[ Setting options ]]
+-- [[ Setting options ]] {{{
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
-
 -- Make line numbers default
 vim.o.number = true
 -- You can also add relative line numbers, to help with jumping.
@@ -165,8 +166,9 @@ vim.o.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.o.confirm = true
+-- [[ Setting options ]] }}}
 
--- [[ Basic Keymaps ]]
+-- [[ Basic Keymaps ]] {{{
 --  See `:help vim.keymap.set()`
 
 -- Clear highlights on search when pressing <Esc> in normal mode
@@ -204,8 +206,9 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 -- vim.keymap.set("n", "<C-S-l>", "<C-w>L", { desc = "Move window to the right" })
 -- vim.keymap.set("n", "<C-S-j>", "<C-w>J", { desc = "Move window to the lower" })
 -- vim.keymap.set("n", "<C-S-k>", "<C-w>K", { desc = "Move window to the upper" })
+-- [[ Basic Keymaps ]] }}}
 
--- [[ Basic Autocommands ]]
+-- [[ Basic Autocommands ]] {{{
 --  See `:help lua-guide-autocommands`
 
 -- Highlight when yanking (copying) text
@@ -218,8 +221,9 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.hl.on_yank()
   end,
 })
+-- [[ Basic Autocommands ]] }}}
 
--- [[ Install `lazy.nvim` plugin manager ]]
+-- [[ Install `lazy.nvim` plugin manager ]] {{{
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
@@ -233,8 +237,9 @@ end
 ---@type vim.Option
 local rtp = vim.opt.rtp
 rtp:prepend(lazypath)
+-- [[ Install `lazy.nvim` plugin manager ]] }}}
 
--- [[ Configure and install plugins ]]
+-- [[ Configure and install plugins ]] {{{
 --
 --  To check the current status of your plugins, run
 --    :Lazy
@@ -1011,6 +1016,7 @@ require('lazy').setup({
     },
   },
 })
+-- [[ Configure and install plugins ]] }}}
 
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et
+-- vim: ts=2 sts=2 sw=2 et foldmethod=marker
