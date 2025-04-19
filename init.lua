@@ -163,6 +163,47 @@ vim.o.scrolloff = 10
 vim.o.confirm = true
 -- [[ Setting options ]] }}}
 
+-- [[ TMP Setting Options ]] {{{
+-- Some settings options which are considered temporary for now, they should be
+-- re-evaluated in the future, when more time is available.
+-- TODO: Change by file-type. {{{
+-- Set textwidth to end at 80.
+vim.o.textwidth = 80
+-- Add a colored column at the end of wanted lines.
+vim.o.colorcolumn = '+1'
+-- TODO: Change by file-type. }}}
+-- TODO: Temporary mapping, while still working on re-learning. {{{
+-- vim.keymap.set('c', 'W', 'w', { desc = 'Save when using wrong letters.' })
+vim.api.nvim_create_user_command('W', 'w', {})
+vim.api.nvim_create_user_command('WQ', 'wq', {})
+vim.api.nvim_create_user_command('Wq', 'wq', {})
+vim.api.nvim_create_user_command('Q', 'q', {})
+-- TODO: Figure out if this is indeed impossible with some keymap through lua.
+vim.cmd [[
+    cnoremap <C-p> <up>
+    cnoremap <C-n> <down>
+]]
+-- TODO: Temporary mapping, while still working on re-learning. }}}
+
+-- TODO: Tab options, was not re-investigated yet. {{{
+vim.o.expandtab = true
+vim.o.tabstop = 4
+vim.o.shiftwidth = 4
+vim.o.softtabstop = 4
+vim.o.shiftround = true
+-- TODO: Tab options, was not re-investigated yet. }}}
+
+-- TODO: ChatGPT generated, re-do to make it nicer. {{{
+-- Function to remove trailing whitespace
+local function remove_trailing_whitespace()
+  -- Use the command to remove trailing whitespace
+  vim.cmd [[ %s/\s\+$//e ]] -- This will remove all trailing spaces in the file
+end
+-- Map <leader>srts to remove trailing whitespace
+vim.keymap.set('n', '<leader>srts', remove_trailing_whitespace, { desc = 'Remove trailing whitespace' })
+-- TODO: ChatGPT generated, re-do to make it nicer. }}}
+-- [[ TMP Setting Options ]] }}}
+
 -- [[ Basic Keymaps ]] {{{
 --  See `:help vim.keymap.set()`
 
