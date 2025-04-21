@@ -161,6 +161,10 @@ vim.o.scrolloff = 10
 -- instead raise a dialog asking if you wish to save the current file(s)
 -- See `:help 'confirm'`
 vim.o.confirm = true
+
+-- Break the lines at end of window, not spliting words.
+vim.o.wrap = true
+vim.o.linebreak = true
 -- [[ Setting options ]] }}}
 
 -- [[ TMP Setting Options ]] {{{
@@ -178,11 +182,8 @@ vim.api.nvim_create_user_command('W', 'w', {})
 vim.api.nvim_create_user_command('WQ', 'wq', {})
 vim.api.nvim_create_user_command('Wq', 'wq', {})
 vim.api.nvim_create_user_command('Q', 'q', {})
--- TODO: Figure out if this is indeed impossible with some keymap through lua.
-vim.cmd [[
-    cnoremap <C-p> <up>
-    cnoremap <C-n> <down>
-]]
+vim.keymap.set('c', '<c-p>', '<up>', { desc = 'Make c-p in command mode behave as up arrow' })
+vim.keymap.set('c', '<c-n>', '<down>', { desc = 'Make c-n in command mode behave as down arrow' })
 -- TODO: Temporary mapping, while still working on re-learning. }}}
 
 -- TODO: Tab options, was not re-investigated yet. {{{
@@ -270,7 +271,14 @@ rtp:prepend(lazypath)
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
+  --
+  -- NOTE: OMSA: Looks like a good plugin, when the files are consistent. But,
+  -- looking at the real word, this is not always the case. Some more
+  -- investigation/testing should be done. It can be a good idea to figure out
+  -- if I can manually load this plugin when wanted, instead of doing so
+  -- automatically.
   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
+  'tpope/vim-fugitive', -- Different vim commands.
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -305,7 +313,90 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
     },
+    config = function()
+      require('gitsigns').setup {
+        -- TODO: OMSA: Move over these mappins, and figure out which ones are
+        -- usefull for me, and whether any of them should have their mapping
+        -- changed, to not clash with other plugins.
+        on_attach = function(bufnr)
+          local gitsigns = require 'gitsigns'
+
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+
+          -- Navigation {{{
+          -- Make ]c move to next hunk, unless in diff window, where this keeps
+          -- the default behaviour.
+          map('n', ']c', function()
+            if vim.wo.diff then
+              vim.cmd.normal { ']c', bang = true }
+            else
+              gitsigns.nav_hunk 'next'
+            end
+          end, { desc = 'Move to the next git hunk' })
+
+          -- Make ]c move to previous hunk, unless in diff window, where this
+          -- keeps the default behaviour.
+          map('n', '[c', function()
+            if vim.wo.diff then
+              vim.cmd.normal { '[c', bang = true }
+            else
+              gitsigns.nav_hunk 'prev'
+            end
+          end, { desc = 'Move to the previous git hunk' })
+          -- Navigation }}}
+
+          -- Actions {{{
+          -- Stage hunks and files.
+          map('n', '<leader>hs', gitsigns.stage_hunk, { desc = 'Stage the current git hunk' })
+          map('v', '<leader>hs', function()
+            gitsigns.stage_hunk { vim.fn.line '.', vim.fn.line 'v' }
+          end, { desc = 'Stage the current git hunk' })
+          map('n', '<leader>hS', gitsigns.stage_buffer, { desc = 'Stage the whole buffer to git' })
+
+          -- Reset hunks and files.
+          map('n', '<leader>hr', gitsigns.reset_hunk, { desc = 'Reset the current git hunk' })
+          map('v', '<leader>hr', function()
+            gitsigns.reset_hunk { vim.fn.line '.', vim.fn.line 'v' }
+          end, { desc = 'Reset the current git hunk' })
+          map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'Reset the whole buffer from git' })
+
+          map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'Preview the current git hunk' })
+          map('n', '<leader>hi', gitsigns.preview_hunk_inline, { desc = 'Inline preview the current git hunk' })
+
+          map('n', '<leader>hb', gitsigns.blame, { desc = 'Open a git blame for the buffer' })
+
+          -- Diff against HEAD/previous-commit
+          map('n', '<leader>hd', gitsigns.diffthis, { desc = 'Create a diff against the current git head' })
+          map('n', '<leader>hD', function()
+            gitsigns.diffthis '~'
+          end, { desc = 'Create a diff against the previous commit' })
+
+          -- Populate quickfix with hunks.
+          map('n', '<leader>hq', gitsigns.setqflist, { desc = 'Populate the quickfix with all git hunks in current file' })
+          map('n', '<leader>hQ', function()
+            gitsigns.setqflist 'all'
+          end, { desc = 'Populate the quickfix with all git hunks' })
+
+          -- Actions }}}
+
+          -- Toggles
+          map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = 'Toggle git blame on line' })
+          map('n', '<leader>td', gitsigns.toggle_deleted, { desc = 'Toggle shown deleted git content' })
+          map('n', '<leader>tw', gitsigns.toggle_word_diff, { desc = 'Toggle a git highlight for all changed words' })
+
+          -- Text object {{{
+          map({ 'o', 'x' }, 'ih', gitsigns.select_hunk, { desc = 'Select the current git hunk' })
+          -- Text object }}}
+        end,
+      }
+    end,
   },
+
+  -- TODO: OMSA: Keep moving over the file from here down.
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -694,9 +785,9 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -877,7 +968,7 @@ require('lazy').setup({
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
         providers = {
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
         },
