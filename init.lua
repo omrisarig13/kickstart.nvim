@@ -91,8 +91,8 @@ P.S. You can delete this when you're done too. It's your config now! :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = '-'
 
--- Am not using nerd-font.
-vim.g.have_nerd_font = false
+-- Enable nerd-font, as it is used.
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]] {{{
 -- Make line numbers default
