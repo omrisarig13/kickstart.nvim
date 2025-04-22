@@ -107,6 +107,7 @@ vim.o.showmode = false
 
 -- Sync clipboard between OS and Neovim.
 --  Schedule the setting after `UiEnter` because it can increase startup-time.
+--  OMSA: Decide whether this functionality makes sense as default.
 vim.schedule(function()
   vim.o.clipboard = 'unnamedplus'
 end)
@@ -155,6 +156,7 @@ vim.opt.listchars = {
 vim.o.inccommand = 'split'
 
 -- Minimal number of screen lines to keep above and below the cursor.
+-- OMSA: Look at this value again, decide if this is too much.
 vim.o.scrolloff = 10
 
 -- if performing an operation that would fail due to unsaved changes in the buffer (like `:q`),
@@ -172,7 +174,7 @@ vim.o.linebreak = true
 -- re-evaluated in the future, when more time is available.
 -- TODO: Change by file-type. {{{
 -- Set textwidth to end at 80.
-vim.o.textwidth = 80
+vim.o.textwidth = 79
 -- Add a colored column at the end of wanted lines.
 vim.o.colorcolumn = '+1'
 -- TODO: Change by file-type. }}}
@@ -181,7 +183,7 @@ vim.o.colorcolumn = '+1'
 vim.api.nvim_create_user_command('W', 'w', {})
 vim.api.nvim_create_user_command('WQ', 'wq', {})
 vim.api.nvim_create_user_command('Wq', 'wq', {})
-vim.api.nvim_create_user_command('Q', 'q', {})
+vim.api.nvim_create_user_command('Q', 'windo q', {})
 vim.keymap.set('c', '<c-p>', '<up>', { desc = 'Make c-p in command mode behave as up arrow' })
 vim.keymap.set('c', '<c-n>', '<down>', { desc = 'Make c-n in command mode behave as down arrow' })
 -- TODO: Temporary mapping, while still working on re-learning. }}}
@@ -203,6 +205,19 @@ end
 -- Map <leader>srts to remove trailing whitespace
 vim.keymap.set('n', '<leader>srts', remove_trailing_whitespace, { desc = 'Remove trailing whitespace' })
 -- TODO: ChatGPT generated, re-do to make it nicer. }}}
+
+-- Set spell checking.
+-- TODO: Update the spellfile location, and make it generated automatically in a
+-- proper place.
+vim.o.spell = true
+vim.o.spelllang = 'en_us'
+vim.o.spellfile = '/home/omsa/.config/nvim-kickstart/omsa-spell.utf-8.add'
+
+vim.keymap.set('n', '<C-Right>', [[<cmd>vertical resize +5<cr>]]) -- make the window biger vertically
+vim.keymap.set('n', '<C-Left>', [[<cmd>vertical resize -5<cr>]]) -- make the window smaller vertically
+vim.keymap.set('n', '<C-Up>', [[<cmd>horizontal resize +2<cr>]]) -- make the window bigger horizontally by pressing shift and =
+vim.keymap.set('n', '<C-Down>', [[<cmd>horizontal resize -2<cr>]]) -- make the window smaller horizontally by pressing shift and -
+
 -- [[ TMP Setting Options ]] }}}
 
 -- [[ Basic Keymaps ]] {{{
@@ -221,6 +236,7 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
+--  OMSA: Takes a bit of getting used to, but looks nice.
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
@@ -272,13 +288,91 @@ rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   --
-  -- NOTE: OMSA: Looks like a good plugin, when the files are consistent. But,
+  -- OMSA: Looks like a good plugin, when the files are consistent. But,
   -- looking at the real word, this is not always the case. Some more
   -- investigation/testing should be done. It can be a good idea to figure out
   -- if I can manually load this plugin when wanted, instead of doing so
   -- automatically.
   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
   'tpope/vim-fugitive', -- Different vim commands.
+  -- OMSA: Check if a better nvim alternative exists.
+  'tpope/vim-fugitive',
+  'tpope/vim-surround',
+  'omrisarig13/vim-auto-abbrev',
+  'unblevable/quick-scope',
+  'tpope/vim-abolish',
+  -- 'wellle/targets.vim',
+  -- 'michaeljsmith/vim-indent-object',
+  -- 'justinmk/vim-ipmotion',
+  'omrisarig13/vim-tab-movements',
+  -- 'airblade/vim-rooter',
+  -- 'junegunn/gv.vim',
+  -- 'airblade/vim-gitgutter',
+  -- 'tpope/vim-rhubarb',
+  -- 'whiteinge/diffconflicts',
+  -- 'rhysd/committia.vim',
+  -- 'sodapopcan/vim-twiggy',
+  -- 'simnalamburt/vim-mundo', -- OMSA: restore
+  'dominikduda/vim_current_word',
+  -- 'tpope/vim-repeat',
+  'jeffkreeftmeijer/vim-numbertoggle',
+  'zhimsel/vim-stay',
+  -- 'markonm/traces.vim',
+  'tpope/vim-eunuch',
+  -- 'kana/vim-operator-user',
+  -- 'mwgkgk/vim-operator-insert',
+  -- 'mwgkgk/vim-operator-append',
+  -- 'svermeulen/vim-subversive',
+  -- 'AndrewRadev/splitjoin.vim',
+  -- 'rhysd/reply.vim',
+  -- 'kana/vim-textobj-user',
+  -- 'glts/vim-textobj-comment',
+  -- 'sgur/vim-textobj-parameter',
+  -- 'rickhowe/wrapwidth',
+  'itspriddle/vim-shellcheck', -- TODO: Figure out how to do that using LSP instead.
+  {
+    -- OMSA: Figure out what mappings are actually available, and whether
+    -- any more features are nice other than having the marks visible.
+    'chentoast/marks.nvim',
+    event = 'VeryLazy',
+    config = function()
+      require('marks').setup {
+        -- whether to map keybinds or not. default true
+        default_mappings = false,
+        mappings = {},
+      }
+    end,
+  },
+  {
+    'rbong/vim-flog',
+    cmd = { 'Flog', 'Flogsplit', 'Floggit' },
+    dependencies = {
+      'tpope/vim-fugitive',
+    },
+    config = function()
+      -- OMSA: The first 2 are probably not going to be used, maybe
+      -- remove them?
+      vim.keymap.set('n', '<leader>gl', ':Flog<cr>', { desc = 'Git full-short-[L]og' })
+      vim.keymap.set('n', '<leader>gL', ':exec "Flog" | tabmove-1<cr>', { desc = 'Git full-short-[L]og', silent = true })
+      -- OMSA: This requires fugitive, not sure how to handle this yet.
+      --
+      -- Flog will create a new tab if the current one is used, but will not
+      -- create one if the current tab is an empty buffer. This means that
+      -- running this command when vim was just opened will fail, as there is
+      -- no tab before the current one. Always start the command by creating
+      -- the new tab, which will be used for the Flog command.
+      vim.keymap.set('n', '<leader>gp', ':tabnew | exec "Flog" | tabmove-1 | G<cr>', { desc = 'Git [P]age', silent = true })
+      vim.keymap.set('n', '<leader>gs', ':tabnew | G show<cr><c-w>o', { desc = 'Git [S]how' })
+    end,
+  },
+  {
+    'inkarkat/vim-ReplaceWithRegister',
+    config = function()
+      vim.keymap.set('n', '<leader>r', '<Plug>ReplaceWithRegisterOperator', { desc = 'Replace with register' })
+      vim.keymap.set('n', '<leader>rr', '<Plug>ReplaceWithRegisterLine', { desc = 'Replace with register line' })
+      vim.keymap.set('v', '<leader>r', '<Plug>ReplaceWithRegisterVisual', { desc = 'Replace with visual' })
+    end,
+  },
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -302,22 +396,20 @@ require('lazy').setup({
   -- options to `gitsigns.nvim`.
   --
   -- See `:help gitsigns` to understand what the configuration keys do
+  -- GitSigns {{{
   { -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
-    opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-    },
     config = function()
       require('gitsigns').setup {
-        -- TODO: OMSA: Move over these mappins, and figure out which ones are
+        -- OMSA: Move over these mappins, and figure out which ones are
         -- usefull for me, and whether any of them should have their mapping
         -- changed, to not clash with other plugins.
+        -- OMSA: There is also a configuration file available which will
+        -- add these (or similar) mappings to the configuration, which can be
+        -- enabled through the line below of:
+        -- `require 'kickstart.plugins.gitsigns'`
+        -- It looks like most of the configuration exists in both, but there
+        -- are some minor changes. Merge the two configuration options.
         on_attach = function(bufnr)
           local gitsigns = require 'gitsigns'
 
@@ -383,10 +475,11 @@ require('lazy').setup({
 
           -- Actions }}}
 
-          -- Toggles
+          -- Toggles {{{
           map('n', '<leader>tb', gitsigns.toggle_current_line_blame, { desc = 'Toggle git blame on line' })
           map('n', '<leader>td', gitsigns.toggle_deleted, { desc = 'Toggle shown deleted git content' })
           map('n', '<leader>tw', gitsigns.toggle_word_diff, { desc = 'Toggle a git highlight for all changed words' })
+          -- Toggles }}}
 
           -- Text object {{{
           map({ 'o', 'x' }, 'ih', gitsigns.select_hunk, { desc = 'Select the current git hunk' })
@@ -395,8 +488,9 @@ require('lazy').setup({
       }
     end,
   },
+  -- GitSigns }}}
 
-  -- TODO: OMSA: Keep moving over the file from here down.
+  -- OMSA: Keep moving over the file from here down.
 
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
@@ -412,13 +506,24 @@ require('lazy').setup({
   -- Then, because we use the `opts` key (recommended), the configuration runs
   -- after the plugin has been loaded as `require(MODULE).setup(opts)`.
 
+  -- which-key.nvim {{{
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    -- event = 'VimEnter', -- Sets the loading event to 'VimEnter'
+    event = 'VeryLazy', -- OMSA: This is the recommended from the help, look over it again.
     opts = {
       -- delay between pressing a key and opening which-key (milliseconds)
-      -- this setting is independent of vim.o.timeoutlen
-      delay = 0,
+      -- this setting is independent of vim.o.timeoutlen.
+      -- Have a short delay to avoid the window opening when I know what I want
+      -- to type.
+      delay = 200,
+      preset = 'modern',
+      plugins = {
+        spelling = {
+          -- OMSA: This is not working properly, see: https://github.com/folke/which-key.nvim/issues/971
+          enabled = false, -- enabling this will show WhichKey when pressing z= to select spelling suggestions
+        },
+      },
       icons = {
         -- set icon mappings to true if you have a Nerd Font
         mappings = vim.g.have_nerd_font,
@@ -457,14 +562,19 @@ require('lazy').setup({
       },
 
       -- Document existing key chains
+      -- OMSA: Update this to support more groups.
       spec = {
         { '<leader>s', group = '[S]earch' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>a', group = '[A]uto Abbreviate' },
+        { '<leader>g', group = '[G]it commands' },
       },
     },
   },
+  -- which-key.nvim }}}
 
+  -- telescope.nvim {{{
   -- NOTE: Plugins can specify dependencies.
   --
   -- The dependencies are proper plugin specifications as well - anything
@@ -494,6 +604,8 @@ require('lazy').setup({
 
       -- Useful for getting pretty icons, but requires a Nerd Font.
       { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+      'davvid/telescope-git-grep.nvim',
+      'debugloop/telescope-undo.nvim',
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -537,18 +649,23 @@ require('lazy').setup({
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
+      pcall(require('telescope').load_extension, 'git_grep')
+      pcall(require('telescope').load_extension, 'undo')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>si', builtin.git_files, { desc = '[S]earch g[I]t files' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+      vim.keymap.set('n', '<leader>st', require('git_grep').live_grep, { desc = '[S]earch by gi[T] grep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+      vim.keymap.set('n', '<leader>su', require('telescope').extensions.undo.undo, { desc = '[S]earch [U]ndo tree' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       -- Slightly advanced example of overriding default behavior and theme
@@ -575,8 +692,9 @@ require('lazy').setup({
       end, { desc = '[S]earch [N]eovim files' })
     end,
   },
+  -- telescope.nvim }}}
 
-  -- LSP Plugins
+  -- LSP Plugins {{{
   {
     -- `lazydev` configures Lua LSP for your Neovim config, runtime and plugins
     -- used for completion, annotations and signatures of Neovim apis
@@ -589,6 +707,8 @@ require('lazy').setup({
       },
     },
   },
+  -- LSP Plugins }}}
+  -- Main LSP Configuration {{{
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -788,6 +908,7 @@ require('lazy').setup({
         clangd = {},
         -- gopls = {},
         pyright = {},
+        bashls = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -847,10 +968,29 @@ require('lazy').setup({
           end,
         },
       }
+      -- TODO: This will not work with the above system, but I could not figure
+      -- out why/how. This should be investigated further.
+      require('lspconfig').bitbake_ls.setup {}
+      --[[ This adds a ton of error messages, so for now we don't want it.
+      require('lspconfig').bitbake_language_server.setup {
+        handlers = {
+          ['window/showMessage'] = function(_, result, _)
+            local message_type = result.type
+            local message_text = result.message
+
+            -- Only show ERROR (1) and WARN (2)
+            if message_type == 1 or message_type == 2 then
+              vim.notify(string.format('[bitbake] %s', message_text), message_type == 1 and vim.log.levels.ERROR or vim.log.levels.WARN)
+            end
+          end,
+        },
+      }
+      --]]
     end,
   },
+  -- Main LSP Configuration }}}
 
-  { -- Autoformat
+  { -- Autoformat {{{
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
     cmd = { 'ConformInfo' },
@@ -890,6 +1030,7 @@ require('lazy').setup({
       },
     },
   },
+  -- Autoformat }}}
 
   -- Noice {{{
   {
@@ -926,7 +1067,7 @@ require('lazy').setup({
   },
   -- Noice }}}
 
-  { -- Autocompletion
+  { -- Autocompletion {{{
     'saghen/blink.cmp',
     event = 'VimEnter',
     version = '1.*',
@@ -1025,7 +1166,10 @@ require('lazy').setup({
       signature = { enabled = true },
     },
   },
+  -- Autocompletion }}}
 
+  -- Colorschemes {{{
+  --[[
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
     -- change the command in the config to whatever the name of that colorscheme is.
@@ -1047,11 +1191,40 @@ require('lazy').setup({
       vim.cmd.colorscheme 'tokyonight-night'
     end,
   },
+  --]]
+  {
+    'catppuccin/nvim',
+    priority = 1000,
+    name = 'catppuccin',
+    config = function()
+      -- Load the colorscheme here.
+      vim.cmd.colorscheme 'catppuccin'
+    end,
+  },
+  -- Colorschemes }}}
 
   -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  {
+    'folke/todo-comments.nvim',
+    event = 'VimEnter',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    config = function()
+      require('todo-comments').setup {
+        signs = false,
+        keywords = {
+          OMSA = { icon = ' ', color = 'info' },
+        },
+      }
+      vim.keymap.set('n', ']f', function()
+        require('todo-comments').jump_next { keywords = { 'TODO', 'OMSA', 'FIXME' } }
+      end, { desc = 'Next [F]ixme comment (TODO, FIXME, OMSA)' })
+      vim.keymap.set('n', '[f', function()
+        require('todo-comments').jump_prev { keywords = { 'TODO', 'OMSA', 'FIXME' } }
+      end, { desc = 'Previous [F]ixme comment (TODO, FIXME, OMSA)' })
+    end,
+  },
 
-  { -- Collection of various small independent plugins/modules
+  { -- Collection of various small independent plugins/modules {{{
     'echasnovski/mini.nvim',
     config = function()
       -- Better Around/Inside textobjects
@@ -1088,7 +1261,8 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
-  { -- Highlight, edit, and navigate code
+  -- Collection of various small independent plugins/modules }}}
+  { -- Highlight, edit, and navigate code {{{
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
@@ -1113,7 +1287,9 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
+  -- Highlight, edit, and navigate code }}}
 
+  -- Next Steps {{{
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
@@ -1140,8 +1316,22 @@ require('lazy').setup({
   -- Or use telescope!
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
+  -- Next Steps }}}
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require('nvim-tree').setup {
+        vim.keymap.set('n', '<f2>', ':NvimTreeToggle<cr>', { desc = '[N]vimTree [T]oggle' }),
+      }
+    end,
+  },
 }, {
-  ui = {
+  ui = { -- {{{
     -- If you are using a Nerd Font: set icons to an empty table which will use the
     -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
     icons = vim.g.have_nerd_font and {} or {
@@ -1159,7 +1349,7 @@ require('lazy').setup({
       task = '📌',
       lazy = '💤 ',
     },
-  },
+  }, -- }}}
 })
 -- [[ Configure and install plugins ]] }}}
 
