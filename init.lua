@@ -1034,7 +1034,9 @@ require('lazy').setup({
 
   -- Noice {{{
   {
-    'folke/noice.nvim',
+    -- 'folke/noice.nvim',
+    'dpetka2001/noice.nvim',
+    branch = 'fix/msg_show.shell_out',
     event = 'VeryLazy',
     dependencies = {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
@@ -1099,7 +1101,7 @@ require('lazy').setup({
         opts = {},
       },
       'folke/lazydev.nvim',
-      'folke/noice.nvim',
+      'dpetka2001/noice.nvim',
     },
     --- @module 'blink.cmp'
     --- @type blink.cmp.Config
