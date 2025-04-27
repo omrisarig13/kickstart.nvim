@@ -396,6 +396,10 @@ require('lazy').setup({
   --
   -- Use the `dependencies` key to specify the dependencies of a particular plugin
 
+  {
+    'rcarriga/nvim-notify',
+    opts = { top_down = false },
+  },
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
@@ -459,10 +463,6 @@ require('lazy').setup({
             require('telescope.themes').get_dropdown(),
           },
         },
-      }
-
-      require('notify').setup {
-        top_down = false,
       }
 
       -- Enable Telescope extensions if they are installed
