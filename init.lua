@@ -294,9 +294,6 @@ require('lazy').setup({
   -- if I can manually load this plugin when wanted, instead of doing so
   -- automatically.
   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-fugitive', -- Different vim commands.
-  -- OMSA: Check if a better nvim alternative exists.
-  'tpope/vim-fugitive',
   'tpope/vim-surround',
   'omrisarig13/vim-auto-abbrev',
   'unblevable/quick-scope',
@@ -341,28 +338,6 @@ require('lazy').setup({
         default_mappings = false,
         mappings = {},
       }
-    end,
-  },
-  {
-    'rbong/vim-flog',
-    cmd = { 'Flog', 'Flogsplit', 'Floggit' },
-    dependencies = {
-      'tpope/vim-fugitive',
-    },
-    config = function()
-      -- OMSA: The first 2 are probably not going to be used, maybe
-      -- remove them?
-      vim.keymap.set('n', '<leader>gl', ':Flog<cr>', { desc = 'Git full-short-[L]og' })
-      vim.keymap.set('n', '<leader>gL', ':exec "Flog" | tabmove-1<cr>', { desc = 'Git full-short-[L]og', silent = true })
-      -- OMSA: This requires fugitive, not sure how to handle this yet.
-      --
-      -- Flog will create a new tab if the current one is used, but will not
-      -- create one if the current tab is an empty buffer. This means that
-      -- running this command when vim was just opened will fail, as there is
-      -- no tab before the current one. Always start the command by creating
-      -- the new tab, which will be used for the Flog command.
-      vim.keymap.set('n', '<leader>gp', ':tabnew | exec "Flog" | tabmove-1 | G<cr>', { desc = 'Git [P]age', silent = true })
-      vim.keymap.set('n', '<leader>gs', ':tabnew | G show<cr><c-w>o', { desc = 'Git [S]how' })
     end,
   },
   {
@@ -1152,7 +1127,7 @@ require('lazy').setup({
   -- require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
   -- require 'kickstart.plugins.neo-tree',
-  require 'kickstart.plugins.gitsigns', -- adds gitsigns with recommend keymaps
+  require 'kickstart.plugins.git',
   require 'kickstart.plugins.which-key',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`

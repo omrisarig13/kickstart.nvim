@@ -1,9 +1,6 @@
--- Adds git related signs to the gutter, as well as utilities for managing changes
--- NOTE: gitsigns is already included in init.lua but contains only the base
--- config. This will add also the recommended keymaps.
-
 return {
   {
+    -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
     opts = {
       on_attach = function(bufnr)
@@ -49,6 +46,7 @@ return {
         map('n', '<leader>hR', gitsigns.reset_buffer, { desc = 'git [R]eset buffer' })
         map('n', '<leader>hp', gitsigns.preview_hunk, { desc = 'git [p]review hunk' })
         map('n', '<leader>hb', gitsigns.blame, { desc = 'git [b]lame' })
+        map('n', '<leader>gb', gitsigns.blame, { desc = 'git [b]lame' })
         map('n', '<leader>hi', gitsigns.preview_hunk_inline, { desc = 'git [i]nline hunk preview' })
         map('n', '<leader>hd', gitsigns.diffthis, { desc = 'git [d]iff against index' })
         map('n', '<leader>hD', function()
@@ -72,6 +70,30 @@ return {
         -- Text object }}}
       end,
     },
+  },
+  {
+    -- Add fugitive, flog, and common keymaps.
+    'tpope/vim-fugitive',
+    dependencies = {
+      'rbong/vim-flog',
+    },
+    config = function()
+      -- OMSA: The first 2 are probably not going to be used, maybe
+      -- remove them?
+      vim.keymap.set('n', '<leader>gl', ':Flog<cr>', { desc = 'Git full-short-[L]og' })
+      vim.keymap.set('n', '<leader>gL', ':exec "Flog" | tabmove-1<cr>', { desc = 'Git full-short-[L]og', silent = true })
+      -- OMSA: This requires fugitive, not sure how to handle this yet.
+      --
+      -- Flog will create a new tab if the current one is used, but will not
+      -- create one if the current tab is an empty buffer. This means that
+      -- running this command when vim was just opened will fail, as there is
+      -- no tab before the current one. Always start the command by creating
+      -- the new tab, which will be used for the Flog command.
+      vim.keymap.set('n', '<leader>gp', ':tabnew | exec "Flog" | tabmove-1 | G<cr>', { desc = 'Git [P]age', silent = true })
+      vim.keymap.set('n', '<leader>gs', ':G show<cr><c-w>T', { desc = 'Git [S]how' })
+      vim.keymap.set('n', '<leader>gu', ':G show <c-r><c-w><cr><c-w>T', { desc = 'Git show commit [U]nder cursor' })
+      vim.keymap.set('n', '<leader>gf', ':G commit --fixup=<c-r>"<cr>', { desc = 'Git [F]ixup (to unnamed register)' })
+    end,
   },
 }
 
