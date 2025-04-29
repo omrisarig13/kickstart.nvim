@@ -1107,19 +1107,6 @@ require('lazy').setup({
   -- In normal mode type `<space>sh` then write `lazy.nvim-plugin`
   -- you can continue same window with `<space>sr` which resumes last telescope search
   -- Next Steps }}}
-  {
-    'nvim-tree/nvim-tree.lua',
-    version = '*',
-    lazy = false,
-    dependencies = {
-      'nvim-tree/nvim-web-devicons',
-    },
-    config = function()
-      require('nvim-tree').setup {
-        vim.keymap.set('n', '<f2>', ':NvimTreeToggle<cr>', { desc = '[N]vimTree [T]oggle' }),
-      }
-    end,
-  },
 }, {
   ui = { -- {{{
     -- If you are using a Nerd Font: set icons to an empty table which will use the
