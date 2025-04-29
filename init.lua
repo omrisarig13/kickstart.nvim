@@ -993,6 +993,7 @@ require('lazy').setup({
   },
   -- Autocompletion }}}
 
+  -- todo-comments {{{
   -- Highlight todo, notes, etc in comments
   {
     'folke/todo-comments.nvim',
@@ -1013,6 +1014,7 @@ require('lazy').setup({
       end, { desc = 'Previous [F]ixme comment (TODO, FIXME, OMSA)' })
     end,
   },
+  -- todo-comments }}}
 
   { -- Collection of various small independent plugins/modules {{{
     'echasnovski/mini.nvim',
