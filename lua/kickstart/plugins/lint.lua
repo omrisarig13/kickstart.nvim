@@ -6,7 +6,16 @@ return {
     config = function()
       local lint = require 'lint'
       lint.linters_by_ft = {
-        markdown = { 'markdownlint' },
+        markdown = { 'vale', 'markdownlint' },
+        text = { 'vale' },
+        -- TODO: Re-enable vale after debugging it.
+        -- rst = { 'vale', 'rstcheck', 'rstlint' },
+        rst = { 'rstcheck', 'rstlint' },
+        json = { 'jsonlint' },
+        dockerfile = { 'hadolint' },
+        bash = { 'bash', 'shellcheck' },
+        gitcommit = { 'gitlint' },
+        python = { 'flake8', 'pylint' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
