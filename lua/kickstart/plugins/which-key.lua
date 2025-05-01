@@ -57,6 +57,7 @@ return {
       -- OMSA: Update this to support more groups.
       spec = {
         { '<leader>s', group = '[S]earch' },
+        { '<leader>sg', group = '[S]earch [G]it' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>a', group = '[A]uto Abbreviate' },
