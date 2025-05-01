@@ -294,60 +294,6 @@ require('lazy').setup({
   -- if I can manually load this plugin when wanted, instead of doing so
   -- automatically.
   'NMAC427/guess-indent.nvim', -- Detect tabstop and shiftwidth automatically
-  'tpope/vim-surround',
-  'omrisarig13/vim-auto-abbrev',
-  'unblevable/quick-scope',
-  'tpope/vim-abolish',
-  -- 'wellle/targets.vim',
-  -- 'michaeljsmith/vim-indent-object',
-  -- 'justinmk/vim-ipmotion',
-  'omrisarig13/vim-tab-movements',
-  -- 'airblade/vim-rooter',
-  -- 'junegunn/gv.vim',
-  -- 'airblade/vim-gitgutter',
-  -- 'tpope/vim-rhubarb',
-  -- 'whiteinge/diffconflicts',
-  -- 'rhysd/committia.vim',
-  -- 'sodapopcan/vim-twiggy',
-  -- 'simnalamburt/vim-mundo', -- OMSA: restore
-  'dominikduda/vim_current_word',
-  -- 'tpope/vim-repeat',
-  'jeffkreeftmeijer/vim-numbertoggle',
-  'zhimsel/vim-stay',
-  -- 'markonm/traces.vim',
-  'tpope/vim-eunuch',
-  -- 'kana/vim-operator-user',
-  -- 'mwgkgk/vim-operator-insert',
-  -- 'mwgkgk/vim-operator-append',
-  -- 'svermeulen/vim-subversive',
-  -- 'AndrewRadev/splitjoin.vim',
-  -- 'rhysd/reply.vim',
-  -- 'kana/vim-textobj-user',
-  -- 'glts/vim-textobj-comment',
-  -- 'sgur/vim-textobj-parameter',
-  -- 'rickhowe/wrapwidth',
-  'itspriddle/vim-shellcheck', -- TODO: Figure out how to do that using LSP instead.
-  {
-    -- OMSA: Figure out what mappings are actually available, and whether
-    -- any more features are nice other than having the marks visible.
-    'chentoast/marks.nvim',
-    event = 'VeryLazy',
-    config = function()
-      require('marks').setup {
-        -- whether to map keybinds or not. default true
-        default_mappings = false,
-        mappings = {},
-      }
-    end,
-  },
-  {
-    'inkarkat/vim-ReplaceWithRegister',
-    config = function()
-      vim.keymap.set('n', '<leader>r', '<Plug>ReplaceWithRegisterOperator', { desc = 'Replace with register' })
-      vim.keymap.set('n', '<leader>rr', '<Plug>ReplaceWithRegisterLine', { desc = 'Replace with register line' })
-      vim.keymap.set('v', '<leader>r', '<Plug>ReplaceWithRegisterVisual', { desc = 'Replace with visual' })
-    end,
-  },
 
   -- NOTE: Plugins can also be added by using a table,
   -- with the first argument being the link and the following
@@ -984,6 +930,7 @@ require('lazy').setup({
   require 'kickstart.plugins.which-key',
   require 'kickstart.plugins.color',
   require 'kickstart.plugins.telescope',
+  require 'custom.plugins.vim-port',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
