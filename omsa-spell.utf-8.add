@@ -11,3 +11,15 @@ nvmem
 RPi
 bootfiles
 cryptera
+UART
+UART3
+spi6
+slb9670
+tpm
+config
+usb
+RTC
+bcm2711
+dts
+broadcom
+raspberrypi
