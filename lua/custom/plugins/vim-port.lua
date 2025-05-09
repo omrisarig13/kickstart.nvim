@@ -1,8 +1,21 @@
 -- Plugins that were ported from my vim configuration. These should be analyzed
 -- again and re-evaluated.
 return {
-  'tpope/vim-surround',
-  'omrisarig13/vim-auto-abbrev',
+  --[[
+  {
+    'omrisarig13/auto-abbrev.nvim',
+    config = function()
+      local plugin = require 'auto-abbrev'
+      plugin.setup()
+
+      vim.keymap.set('n', '<leader>aa', plugin.interactive_add_abbrev, { desc = '[A]uto-abbrev [A]dd interactive' })
+      vim.keymap.set('n', '<leader>al', plugin.save_as_lhs, { desc = '[A]uto-abbrev add [L]eft-hand-size' })
+      vim.keymap.set('n', '<leader>ar', plugin.use_as_rhs, { desc = '[A]uto-abbrev add [R]ight-hand-size' })
+    end,
+  },
+  --]]
+  -- 'tpope/vim-surround',
+  -- 'omrisarig13/vim-auto-abbrev',
   'unblevable/quick-scope',
   'tpope/vim-abolish',
   -- 'wellle/targets.vim',
@@ -19,7 +32,7 @@ return {
   -- OMSA: Telescope-undo is also doing the same, and seems to be quite good,
   -- deceide whether mundo is also wanted.
   -- 'simnalamburt/vim-mundo',
-  'dominikduda/vim_current_word',
+  -- 'dominikduda/vim_current_word',
   -- 'tpope/vim-repeat',
   'jeffkreeftmeijer/vim-numbertoggle',
   'zhimsel/vim-stay',
@@ -48,6 +61,7 @@ return {
       }
     end,
   },
+  --[[
   {
     'inkarkat/vim-ReplaceWithRegister',
     config = function()
@@ -56,4 +70,22 @@ return {
       vim.keymap.set('v', '<leader>r', '<Plug>ReplaceWithRegisterVisual', { desc = 'Replace with visual' })
     end,
   },
+  --]]
+  {
+    'omrisarig13/mistake.nvim',
+    branch = 'omsa/add-current-word',
+    config = function()
+      local plugin = require 'mistake'
+      vim.defer_fn(function()
+        plugin.setup()
+      end, 500)
+
+      vim.keymap.set('n', '<leader>ma', plugin.add_entry, { desc = '[M]istake [A]dd entry' })
+      vim.keymap.set('n', '<leader>me', plugin.edit_entries, { desc = '[M]istake [E]dit entries' })
+      vim.keymap.set('n', '<leader>mc', plugin.add_entry_under_cursor, { desc = '[M]istake add [C]urrent word' })
+    end,
+  },
+
+  -- Just for fun, not really needed.
+  'vuciv/golf',
 }

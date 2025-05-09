@@ -63,6 +63,13 @@ return {
           vim.cmd 'setlocal nonumber norelativenumber'
           vim.cmd(string.format('noautocmd lua vim.api.nvim_set_current_win(%s)', prompt_win))
         end, { buffer = bufnr })
+        vim.keymap.set('n', '<c-h>', function()
+          vim.cmd 'setlocal nonumber norelativenumber'
+          vim.cmd(string.format('noautocmd lua vim.api.nvim_set_current_win(%s)', prompt_win))
+        end, { buffer = bufnr })
+        vim.keymap.set('n', 'q', function()
+          require('telescope.actions').close(prompt_bufnr)
+        end, { buffer = bufnr })
         vim.cmd(string.format('noautocmd lua vim.api.nvim_set_current_win(%s)', winid))
         vim.cmd 'setlocal nomodifiable number relativenumber'
       end
@@ -76,16 +83,56 @@ return {
         --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
         --   },
         -- },
-        -- pickers = {}
+        extensions_list = { 'themes', 'terms' },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
           },
         },
         defaults = {
+          prompt_prefix = '   ',
+          selection_caret = ' ',
+          entry_prefix = ' ',
+          sorting_strategy = 'ascending',
+          layout_config = {
+            horizontal = {
+              prompt_position = 'top',
+              preview_width = 0.55,
+            },
+            width = 0.87,
+            height = 0.80,
+          },
           mappings = {
-            i = { ['<Tab>'] = focus_preview },
-            n = { ['<Tab>'] = focus_preview },
+            i = { ['<c-l>'] = focus_preview },
+            n = {
+              ['q'] = require('telescope.actions').close,
+              ['<c-l>'] = focus_preview,
+            },
+          },
+        },
+        pickers = {
+          buffers = {
+            mappings = {
+              i = {
+                ['<CR>'] = require('telescope.actions').select_tab_drop,
+                ['<tab>'] = require('telescope.actions').select_default,
+              },
+            },
+          },
+          find_files = {
+            mappings = {
+              i = { ['<tab>'] = require('telescope.actions').select_tab_drop },
+            },
+          },
+          git_files = {
+            mappings = {
+              i = { ['<tab>'] = require('telescope.actions').select_tab_drop },
+            },
+          },
+          old_files = {
+            mappings = {
+              i = { ['<tab>'] = require('telescope.actions').select_tab_drop },
+            },
           },
         },
       }
@@ -119,6 +166,7 @@ return {
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>s/', search_grep_local_files, { desc = '[S]earch [/] in Open Files' })
       vim.keymap.set('n', '<leader>sa', builtin.search_history, { desc = '[S]earch se[A]rch history' })
+      vim.keymap.set('n', '<leader>sb', builtin.current_buffer_fuzzy_find, { desc = '[S]earch current [B]uffer' })
       vim.keymap.set('n', '<leader>sc', builtin.command_history, { desc = '[S]earch [C]ommand history' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>se', builtin.live_grep, { desc = '[S]earch by gr[E]p' })

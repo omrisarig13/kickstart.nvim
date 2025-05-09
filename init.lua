@@ -184,8 +184,29 @@ vim.api.nvim_create_user_command('W', 'w', {})
 vim.api.nvim_create_user_command('WQ', 'wq', {})
 vim.api.nvim_create_user_command('Wq', 'wq', {})
 vim.api.nvim_create_user_command('Q', 'windo q', {})
-vim.keymap.set('c', '<c-p>', '<up>', { desc = 'Make c-p in command mode behave as up arrow' })
-vim.keymap.set('c', '<c-n>', '<down>', { desc = 'Make c-n in command mode behave as down arrow' })
+
+local function format_table()
+  -- Get start line
+  vim.cmd 'normal! {j'
+  local start_line = vim.fn.line '.'
+  -- Remove header line, will be added again in the future
+  vim.cmd 'normal! jdd'
+  -- Get end line
+  vim.cmd 'normal! }k'
+  local end_line = vim.fn.line '.'
+  -- Format the table
+  -- Remove multiple spaces, to let the column command create the minimal
+  -- needed columns
+  vim.cmd(start_line .. ',' .. end_line .. 's/ \\+/ /ge')
+  vim.cmd(start_line .. ',' .. end_line .. "!column -t -s '|' -o '|'")
+  -- Re-create header
+  vim.cmd 'normal! {jyyp' -- Create template for header line.
+  vim.cmd 's/[^|]/-/g' -- Create dashes in header line
+  vim.cmd 's/|-/| /g' -- Remove dashes after separators
+  vim.cmd 's/-|/ |/g' -- Remove dashes before separators
+end
+vim.keymap.set('n', '<leader>pf', format_table, { desc = '[P]ersonal format [T]able' })
+
 -- TODO: Temporary mapping, while still working on re-learning. }}}
 
 -- TODO: Tab options, was not re-investigated yet. {{{
@@ -195,16 +216,6 @@ vim.o.shiftwidth = 4
 vim.o.softtabstop = 4
 vim.o.shiftround = true
 -- TODO: Tab options, was not re-investigated yet. }}}
-
--- TODO: ChatGPT generated, re-do to make it nicer. {{{
--- Function to remove trailing whitespace
-local function remove_trailing_whitespace()
-  -- Use the command to remove trailing whitespace
-  vim.cmd [[ %s/\s\+$//e ]] -- This will remove all trailing spaces in the file
-end
--- Map <leader>srts to remove trailing whitespace
-vim.keymap.set('n', '<leader>srts', remove_trailing_whitespace, { desc = 'Remove trailing whitespace' })
--- TODO: ChatGPT generated, re-do to make it nicer. }}}
 
 -- Set spell checking.
 -- TODO: Update the spellfile location, and make it generated automatically in a
@@ -218,6 +229,28 @@ vim.keymap.set('n', '<C-Left>', [[<cmd>vertical resize -5<cr>]]) -- make the win
 vim.keymap.set('n', '<C-Up>', [[<cmd>horizontal resize +2<cr>]]) -- make the window bigger horizontally by pressing shift and =
 vim.keymap.set('n', '<C-Down>', [[<cmd>horizontal resize -2<cr>]]) -- make the window smaller horizontally by pressing shift and -
 
+vim.cmd 'command! Lcdc lcd %:h'
+vim.keymap.set('n', '<leader>pc', ':Lcdc<cr>', { desc = '[P]ersonal [C]hange directory' })
+
+local function close_tabs_to_right()
+  local current_tab_page = vim.fn.tabpagenr()
+
+  local next_tab_info = vim.fn.gettabinfo(current_tab_page + 1)
+  while next(next_tab_info) ~= nil do
+    vim.cmd('tabclose ' .. (current_tab_page + 1))
+    next_tab_info = vim.fn.gettabinfo(current_tab_page + 1)
+  end
+end
+vim.keymap.set('n', '<leader>tr', close_tabs_to_right, { desc = '[T]ab close tabs to the [R]ight' })
+
+local function close_tabs_to_left()
+  local previous_tab_page = vim.fn.tabpagenr() - 1
+
+  for i = previous_tab_page, 1, -1 do
+    vim.cmd('tabclose ' .. i)
+  end
+end
+vim.keymap.set('n', '<leader>tl', close_tabs_to_left, { desc = '[T]ab close tabs to the [L]eft' })
 -- [[ TMP Setting Options ]] }}}
 
 -- [[ Basic Keymaps ]] {{{
@@ -237,10 +270,10 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
 --  OMSA: Takes a bit of getting used to, but looks nice.
-vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
-vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
-vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
-vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+-- vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+-- vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+-- vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+-- vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- [[ Basic Keymaps ]] }}}
 
@@ -683,6 +716,59 @@ require('lazy').setup({
   },
   -- Autoformat }}}
 
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons', 'dpetka2001/noice.nvim' },
+    config = function()
+      require('lualine').setup {
+        options = {
+          icons_enabled = true,
+          theme = 'auto',
+          component_separators = { left = '', right = '' },
+          section_separators = { left = '', right = '' },
+          disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+          },
+          ignore_focus = {},
+          always_divide_middle = true,
+          always_show_tabline = true,
+          globalstatus = false,
+          refresh = {
+            statusline = 100,
+            tabline = 100,
+            winbar = 100,
+          },
+        },
+        sections = {
+          lualine_a = { 'mode' },
+          lualine_b = { 'branch', 'diff', 'diagnostics' },
+          lualine_c = { 'filename' },
+          lualine_x = { 'encoding', 'fileformat', 'filetype' },
+          lualine_y = {
+            {
+              require('noice').api.status.mode.get,
+              cond = require('noice').api.status.mode.has,
+            },
+          },
+          lualine_z = { 'location' },
+        },
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
+          lualine_c = { 'filename' },
+          lualine_x = { 'location' },
+          lualine_y = {},
+          lualine_z = {},
+        },
+        tabline = {},
+        winbar = {},
+        inactive_winbar = {},
+        extensions = {},
+      }
+    end,
+  },
+
   -- Noice {{{
   {
     -- 'folke/noice.nvim',
@@ -782,6 +868,11 @@ require('lazy').setup({
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
         preset = 'default',
+        ['<C-e>'] = { 'scroll_documentation_down', 'fallback' },
+        ['<C-j>'] = { 'scroll_documentation_up', 'fallback' },
+        -- TODO: Update
+        -- ['<C-space>'] = { 'fallback' }, -- c-space is used for copilot completion.
+        -- Print the value of b:copilot_enabled in vimscript
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -796,13 +887,37 @@ require('lazy').setup({
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
         -- Optionally, set `auto_show = true` to show the documentation after a delay.
-        documentation = { auto_show = false, auto_show_delay_ms = 500 },
+        documentation = { auto_show = true, auto_show_delay_ms = 5 },
+        menu = {
+          draw = {
+            columns = {
+              { 'label', 'label_description', gap = 1 },
+              { 'kind_icon', 'kind' },
+            },
+          },
+        },
+        -- Display a preview of the selected item on the current line
+        ghost_text = { enabled = false },
       },
 
       sources = {
-        default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
+        default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer', 'omni' },
         providers = {
+          lsp = {
+            fallbacks = {},
+          },
           lazydev = { module = 'lazydev.integrations.blink', score_offset = 100 },
+          -- Not sure if this is working or not, to test...
+          buffer = {
+            score_offset = -5,
+            opts = {
+              get_bufnrs = function()
+                return vim.tbl_filter(function(bufnr)
+                  return vim.bo[bufnr].buftype == ''
+                end, vim.api.nvim_list_bufs())
+              end,
+            },
+          },
         },
       },
 
@@ -815,7 +930,16 @@ require('lazy').setup({
       -- the rust implementation via `'prefer_rust_with_warning'`
       --
       -- See :h blink-cmp-config-fuzzy for more information
-      fuzzy = { implementation = 'lua' },
+      -- fuzzy = { implementation = 'lua' },
+      fuzzy = {
+        implementation = 'prefer_rust_with_warning',
+        sorts = {
+          'exact',
+          -- defaults
+          'score',
+          'sort_text',
+        },
+      },
 
       -- Shows a signature help window while you type arguments for a function
       signature = { enabled = true },
@@ -859,25 +983,172 @@ require('lazy').setup({
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
+      -- 'tpope/vim-surround' equivalent.
+      --
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
       require('mini.surround').setup()
 
-      -- Simple and easy statusline.
-      --  You could remove this setup call if you don't like it,
-      --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
-      -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      -- Session handling
+      --
+      -- 'tpope/vim-obsession' equivalent
+      require('mini.sessions').setup()
+      local sessions = require 'mini.sessions'
+      vim.keymap.set('n', '<leader>isc', function()
+        local session_name = sessions.config.file
+        vim.cmd('mksession ' .. session_name)
+      end, { desc = 'M[I]ni [S]ession [C]reate' })
+      vim.keymap.set('n', '<leader>isr', sessions.read, { desc = 'M[I]ni [S]ession [R]ead' })
+      vim.keymap.set('n', '<leader>isw', sessions.write, { desc = 'M[I]ni [S]ession [W]rite' })
+      vim.keymap.set('n', '<leader>iss', sessions.select, { desc = 'M[I]ni [S]ession [S]elect' })
+      vim.keymap.set('n', '<leader>isd', function()
+        sessions.delete(nil, { force = true })
+      end, { desc = 'M[I]ni [S]ession [D]edelet' })
 
-      -- You can configure sections in the statusline by overriding their
-      -- default behavior. For example, here we set the section for
-      -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
+      -- Better around/inside handling.
+      --
+      -- 'wellle/targets.vim'
+      --
+      -- - dan) - [D]elete [A]round [N]next [)]Paren
+      require('mini.ai').setup()
+
+      -- Alignment plugin
+      --
+      -- gaip= - Align = signs.
+      -- [v]: gA= Align equal signs in selected visual.
+      require('mini.align').setup()
+
+      -- Move lines and selected text around
+      require('mini.move').setup {
+        mappings = {
+          -- Move visual selection in Visual mode. Defaults are Alt (Meta) + hjkl.
+          left = '<C-h>',
+          right = '<C-l>',
+          down = '<C-j>',
+          up = '<C-k>',
+
+          -- Move current line in Normal mode
+          line_left = '<C-h>',
+          line_right = '<C-l>',
+          line_down = '<C-j>',
+          line_up = '<C-k>',
+        },
+      }
+
+      -- Some cool operators
+      --
+      -- - g=<operator> - evaluate
+      -- - gx<operator> + . - exchange
+      -- - gm<operator> - duplicate
+      -- - gs<operator> - sort
+      --
+      -- replace is equivalent to 'inkarkat/vim-ReplaceWithRegister'
+      require('mini.operators').setup {
+        replace = {
+          prefix = '<leader>r',
+        },
+      }
+
+      -- Split and join function arguments, adds/removes newlines as wanted.
+      --
+      -- - gS split/join the arguments.
+      require('mini.splitjoin').setup()
+
+      -- Use the [] brackets to move around.
+      require('mini.bracketed').setup()
+
+      -- This is a different implementation for diff handling in nvim.
+      -- Currently, I'm happy with the default handling, but this can be
+      -- re-evaluated later, if more features are needed/wanted.
+      -- require('mini.diff').setup()
+
+      -- Better handling when opening directory as file.
+      --
+      -- Add mapping for easy open and close of the file explorer.
+      require('mini.files').setup()
+      vim.keymap.set('n', '<leader>if', MiniFiles.open, { desc = 'M[I]ni [F]ile explorer open' })
+      vim.keymap.set('n', '<leader>ic', function()
+        MiniFiles.open(vim.api.nvim_buf_get_name(0))
+      end, { desc = 'M[I]ni file explorer open [C]urrent file' })
+      vim.keymap.set('n', '<leader>ii', function()
+        local file_path = vim.fn.input('Enter path to open:', '', 'file')
+        MiniFiles.open(file_path)
+      end, { desc = 'M[I]ni file explorer open [I]nputted path' })
+
+      local map_split = function(buf_id, lhs, direction)
+        local rhs = function()
+          -- Make new window and set it as target
+          local cur_target = MiniFiles.get_explorer_state().target_window
+          local new_target = vim.api.nvim_win_call(cur_target, function()
+            vim.cmd(direction .. ' split')
+            return vim.api.nvim_get_current_win()
+          end)
+
+          MiniFiles.set_target_window(new_target)
+
+          -- This intentionally doesn't act on file under cursor in favor of
+          -- explicit "go in" action (`l` / `L`). To immediately open file,
+          -- add appropriate `MiniFiles.go_in()` call instead of this comment.
+          MiniFiles.go_in()
+          MiniFiles.close()
+        end
+
+        -- Adding `desc` will result into `show_help` entries
+        local desc = 'Split ' .. direction
+        vim.keymap.set('n', lhs, rhs, { buffer = buf_id, desc = desc })
       end
+
+      vim.api.nvim_create_autocmd('User', {
+        pattern = 'MiniFilesBufferCreate',
+        callback = function(args)
+          local buf_id = args.data.buf_id
+          -- Tweak keys to your liking
+          map_split(buf_id, '<C-s>', 'belowright horizontal')
+          map_split(buf_id, '<C-v>', 'belowright vertical')
+          map_split(buf_id, '<C-t>', 'tab')
+          vim.keymap.set('n', '<cr>', function()
+            local fs_entry = MiniFiles.get_fs_entry()
+
+            if fs_entry == nil or fs_entry.fs_type == nil or fs_entry.path == nil then
+              print 'Invalid fs_entry table'
+              return
+            end
+
+            if fs_entry.fs_type == 'directory' then
+              local current_window = vim.api.nvim_get_current_win()
+              vim.cmd('windo lcd ' .. fs_entry.path)
+              vim.api.nvim_set_current_win(current_window)
+            elseif fs_entry.fs_type == 'file' then
+              MiniFiles.go_in()
+              MiniFiles.close()
+            end
+          end, { buffer = buf_id, desc = 'LCD to current directory' })
+        end,
+      })
+
+      -- Highlight current word
+      --
+      -- Equivalent to vim_current_word
+      require('mini.cursorword').setup()
+
+      -- Highlight and remove trailing spaces.
+      require('mini.trailspace').setup()
+      vim.keymap.set('n', '<leader>it', MiniTrailspace.trim, { desc = 'M[I]ni [T]railspaces trim' })
+      vim.keymap.set('n', '<leader>il', MiniTrailspace.trim_last_lines, { desc = 'M[I]ni trailspaces trim [L]ines' })
+
+      -- todo-comments has more features than mini-hipatterns
+
+      require('mini.icons').setup()
+
+      -- Show indentation groups in a nice way.
+      --
+      -- Also solves the need for lukas-reineke/indent-blankline.nvim.
+      require('mini.indentscope').setup()
+
+      -- Show a short overview of the line length and indentation in the file
+      require('mini.map').setup()
+      vim.keymap.set('n', '<leader>im', MiniMap.toggle, { desc = 'M[I]ni [M]ap toggle' })
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
@@ -910,6 +1181,13 @@ require('lazy').setup({
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
   -- Highlight, edit, and navigate code }}}
+  -- Temporary plugins: {{{
+  {
+    -- TODO: Read the docs, and understand if more options can be good.
+    'MeanderingProgrammer/render-markdown.nvim',
+    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' },
+  },
+  -- Temporary plugins: }}}
 
   -- Next Steps {{{
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
@@ -922,15 +1200,85 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  require 'kickstart.plugins.indent_line',
+  -- require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.lint',
-  require 'kickstart.plugins.autopairs',
-  require 'kickstart.plugins.neo-tree',
+  -- require 'kickstart.plugins.autopairs',
+  -- require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.git',
   require 'kickstart.plugins.which-key',
   require 'kickstart.plugins.color',
   require 'kickstart.plugins.telescope',
   require 'custom.plugins.vim-port',
+  require 'custom.plugins.flash',
+
+  -- Copilot {{{
+  --[[
+  {
+    'github/copilot.vim',
+    config = function()
+      -- Disabe by default, ask for specific suggestion with c-space.
+      vim.cmd 'Copilot disable'
+      vim.keymap.set('i', '<C-space>', '<Plug>(copilot-suggest)')
+      vim.keymap.set('i', '<C-b>', '<Plug>(copilot-next)')
+
+      -- Create a keymap to toggle copilot enable<->disable
+      -- Copilot does not support checking if it is globally enabled or
+      -- disabled, so create a variable here, and manually change it when
+      -- toggling with the keymap.
+      -- This will break if the user changes the copilot settings manually (by
+      -- running "Copilot enable/disable"). In this case, the next toggle
+      -- keymap will not change the copilot settings. That's okay here, as I'll
+      -- always be using the keymap to toggle it.
+      vim.g.copilot_enabled = false
+      vim.keymap.set('n', '<leader>tc', function()
+        if vim.g.copilot_enabled then
+          vim.cmd 'Copilot disable'
+          vim.g.copilot_enabled = false
+          print 'Copilot Disabled'
+        else
+          vim.cmd 'Copilot enable'
+          vim.g.copilot_enabled = true
+          print 'Copilot Enabled'
+        end
+      end, { desc = '[C]opilot [T]oggle' })
+
+      vim.keymap.set('n', '<leader>uc', ':Copilot status<CR>', { desc = 'Stat[U]s [C]opilot' })
+    end,
+  },
+  --]]
+  -- Copilot }}}
+  {
+    'folke/snacks.nvim',
+    priority = 1000,
+    lazy = false,
+    config = function()
+      require('snacks').setup {
+        bigfile = { enabled = true },
+        dashboard = { enabled = true },
+        explorer = { enabled = true },
+        indent = { enabled = true },
+        input = { enabled = true },
+        picker = { enabled = false },
+        notifier = { enabled = false },
+        quickfile = { enabled = true },
+        scope = { enabled = true },
+        scroll = { enabled = false },
+        statuscolumn = { enabled = true },
+        words = { enabled = true },
+      }
+
+      local snacks = require 'snacks'
+
+      vim.keymap.set('n', '<leader>os', function()
+        snacks.scratch()
+      end, { desc = 'Snacks [S]cratch' })
+      vim.keymap.set('n', '<leader>oc', snacks.scratch.select, { desc = 'Snacs s[c]ratch select' })
+      vim.keymap.set('n', '<leader>or', snacks.rename.rename_file, { desc = 'Snacks [R]ename' })
+      vim.keymap.set('n', '<leader>og', function()
+        snacks.gitbrowse()
+      end, { desc = 'Snacks [G]it browse (remote)' })
+    end,
+  },
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.

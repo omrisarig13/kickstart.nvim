@@ -54,14 +54,22 @@ return {
       },
 
       -- Document existing key chains
-      -- OMSA: Update this to support more groups.
       spec = {
+
+        { '<leader>g', group = '[G]it commands' },
+        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>hd', group = 'Git [H]unk [D]if' },
+        { '<leader>i', group = 'M[I]ni' },
+        { '<leader>if', group = 'M[I]ni [F]ile explorer' },
+        { '<leader>is', group = 'M[I]ni [S]ession' },
+        { '<leader>m', group = '[M]istake' },
+        { '<leader>n', group = 'Flash' }, -- Not a group, but saved to keep track.
+        { '<leader>o', group = 'Snacks' },
+        { '<leader>p', group = '[P]ersonal' },
         { '<leader>s', group = '[S]earch' },
         { '<leader>sg', group = '[S]earch [G]it' },
-        { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
-        { '<leader>a', group = '[A]uto Abbreviate' },
-        { '<leader>g', group = '[G]it commands' },
+        { '<leader>t', group = '[T]oggle/[T]ab' },
+        { '<leader>u', group = 'Stat[U]s' },
       },
     },
   },
