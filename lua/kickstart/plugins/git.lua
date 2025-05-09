@@ -78,21 +78,18 @@ return {
       'rbong/vim-flog',
     },
     config = function()
-      -- OMSA: The first 2 are probably not going to be used, maybe
-      -- remove them?
-      vim.keymap.set('n', '<leader>gl', ':Flog<cr>', { desc = 'Git full-short-[L]og' })
-      vim.keymap.set('n', '<leader>gL', ':exec "Flog" | tabmove-1<cr>', { desc = 'Git full-short-[L]og', silent = true })
-      -- OMSA: This requires fugitive, not sure how to handle this yet.
-      --
       -- Flog will create a new tab if the current one is used, but will not
       -- create one if the current tab is an empty buffer. This means that
-      -- running this command when vim was just opened will fail, as there is
-      -- no tab before the current one. Always start the command by creating
-      -- the new tab, which will be used for the Flog command.
+      -- running the <leader>gp command when nvim was just opened will fail, as
+      -- there is no tab before the current one. Always start this command by
+      -- creating the new tab, which will be used for the Flog command.
+
+      vim.keymap.set('n', '<leader>gc', ':G commit<cr>', { desc = 'Git [C]ommit' })
+      vim.keymap.set('n', '<leader>gf', ':G commit --fixup=<c-r>"<cr>', { desc = 'Git [F]ixup (to unnamed register)' })
       vim.keymap.set('n', '<leader>gp', ':tabnew | exec "Flog" | tabmove-1 | G<cr>', { desc = 'Git [P]age', silent = true })
+      vim.keymap.set('n', '<leader>gq', ':G commit --squash=<c-r>"<cr>', { desc = 'Git s[Q]uash (to unnamed register)' })
       vim.keymap.set('n', '<leader>gs', ':G show<cr><c-w>T', { desc = 'Git [S]how' })
       vim.keymap.set('n', '<leader>gu', ':G show <c-r><c-w><cr><c-w>T', { desc = 'Git show commit [U]nder cursor' })
-      vim.keymap.set('n', '<leader>gf', ':G commit --fixup=<c-r>"<cr>', { desc = 'Git [F]ixup (to unnamed register)' })
     end,
   },
 }

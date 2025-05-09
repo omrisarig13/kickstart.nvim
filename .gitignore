@@ -4,3 +4,5 @@ test.sh
 nvim
 
 spell/
+__pycache__/
+Session.vim

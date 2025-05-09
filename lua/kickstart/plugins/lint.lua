@@ -6,8 +6,8 @@ return {
     config = function()
       local lint = require 'lint'
       lint.linters_by_ft = {
-        markdown = { 'markdownlint' },
-        -- markdown = { 'vale', 'markdownlint' },
+        -- markdown = { 'markdownlint' },
+        markdown = { 'vale', 'markdownlint' },
         -- text = { 'vale' },
         -- TODO: Re-enable vale after debugging it.
         -- rst = { 'vale', 'rstcheck', 'rstlint' },
