@@ -88,4 +88,19 @@ return {
 
   -- Just for fun, not really needed.
   'vuciv/golf',
+
+  -- Future plugins... {{{
+  -- In case I want to work with GitHub's PR:
+  --   pwntester/octo.nvim
+  -- More Git plugins
+  --   NeogitOrg/neogit
+  -- For markdown, not currently working, so debugging is needed.
+  --   iamcco/markdown-preview.nvim
+  -- Some more:
+  --   kevinhwang91/nvim-ufo
+  --   SmiteshP/nvim-navic
+  --   SmiteshP/nvim-navbuddy
+  -- Future plugins... }}}
 }
+--
+-- vim: ts=2 sts=2 sw=2 et foldmethod=marker

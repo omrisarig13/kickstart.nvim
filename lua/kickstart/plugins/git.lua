@@ -132,36 +132,16 @@ return {
         opts = {
           keymaps = {
             file_panel = {
-              {
-                'n',
-                'cc',
-                '<Cmd>Git commit <bar> wincmd K<CR>',
-                { desc = 'Commit staged changes' },
-              },
-              {
-                'n',
-                'ca',
-                '<Cmd>Git commit --amend <bar> wincmd K<CR>',
-                { desc = 'Amend the last commit' },
-              },
-              {
-                'n',
-                'ce',
-                '<Cmd>Git commit --amend --no-edit<CR>',
-                { desc = 'Amend the last commit without editting' },
-              },
-              {
-                'n',
-                'gi',
-                add_to_ignore,
-                { desc = 'Add the current file to the .gitignore' },
-              },
-              {
-                'n',
-                'gI',
-                add_to_exclude,
-                { desc = 'Add the current file to the .git/info/exclude' },
-              },
+              { 'n', 'cc', '<Cmd>Git commit <bar> wincmd K<CR>', { desc = 'Commit staged changes' } },
+              { 'n', 'ca', '<Cmd>Git commit --amend <bar> wincmd K<CR>', { desc = 'Amend the last commit' } },
+              { 'n', 'ce', '<Cmd>Git commit --amend --no-edit<CR>', { desc = 'Amend the last commit without editting' } },
+              { 'n', 'gi', add_to_ignore, { desc = 'Add the current file to the .gitignore' } },
+              { 'n', 'gI', add_to_exclude, { desc = 'Add the current file to the .git/info/exclude' } },
+            },
+          },
+          view = {
+            merge_tool = {
+              layout = 'diff4_mixed',
             },
           },
         },
@@ -174,14 +154,24 @@ return {
       -- there is no tab before the current one. Always start this command by
       -- creating the new tab, which will be used for the Flog command.
 
+      local function create_show_page(commit_to_show)
+        vim.cmd('DiffviewOpen ' .. commit_to_show .. '~..' .. commit_to_show)
+        vim.cmd('G show -s ' .. commit_to_show)
+        vim.cmd 'wincmd K'
+      end
+
       vim.keymap.set('n', '<leader>gc', '<cmd>G commit<cr>', { desc = 'Git [C]ommit' })
       vim.keymap.set('n', '<leader>gd', '<cmd>DiffviewOpen<cr>', { desc = 'Git [D]if view open' })
       vim.keymap.set('n', '<leader>gf', '<cmd>G commit --fixup=<c-r>"<cr>', { desc = 'Git [F]ixup (to unnamed register)' })
-      vim.keymap.set('n', '<leader>gp', '<cmd>tabnew <bar> exec "Flog" <bar> tabmove-1 <bar> DiffviewOpen <cr>', { desc = 'Git [P]age', silent = true })
+      vim.keymap.set('n', '<leader>gp', '<cmd>tabnew <bar> exec "Flog" <bar> G <bar> tabmove-1 <bar> DiffviewOpen <cr>', { desc = 'Git [P]age', silent = true })
       vim.keymap.set('n', '<leader>gl', '<cmd>-tabnew <bar> Flog<cr>', { desc = 'Git f[L]og' })
       vim.keymap.set('n', '<leader>gq', '<cmd>G commit --squash=<c-r>"<cr>', { desc = 'Git s[Q]uash (to unnamed register)' })
-      vim.keymap.set('n', '<leader>gs', '<cmd>G show<cr><c-w>T', { desc = 'Git [S]how' })
-      vim.keymap.set('n', '<leader>gu', '<cmd>G show <c-r><c-w><cr><c-w>T', { desc = 'Git show commit [U]nder cursor' })
+      vim.keymap.set('n', '<leader>gs', function()
+        create_show_page 'HEAD'
+      end, { desc = 'Git [S]how' })
+      vim.keymap.set('n', '<leader>gu', function()
+        create_show_page(vim.fn.expand '<cword>')
+      end, { desc = 'Git show commit [U]nder cursor' })
     end,
   },
 }

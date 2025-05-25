@@ -1,6 +1,10 @@
 return {
-	["examel"] = "example",
+	["fn"] = "fn",
 	["applicaitons"] = "applications",
-	["avalibale"] = "available",
+	["nnot"] = "not",
+	["examel"] = "example",
 	["theer"] = "there",
+	["buf"] = "buf",
+	["tteh"] = "the",
+	["avalibale"] = "available",
 }
