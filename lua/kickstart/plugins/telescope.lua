@@ -147,9 +147,14 @@ return {
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
+      local utils = require 'telescope.utils'
 
       local search_nvim_config_files = function()
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
+      end
+
+      local search_files_in_buffer_dir = function()
+        builtin.find_files { cwd = utils.buffer_dir() }
       end
 
       local search_grep_local_files = function()
@@ -167,13 +172,15 @@ return {
       vim.keymap.set('n', '<leader>s/', search_grep_local_files, { desc = '[S]earch [/] in Open Files' })
       vim.keymap.set('n', '<leader>sa', builtin.search_history, { desc = '[S]earch se[A]rch history' })
       vim.keymap.set('n', '<leader>sb', builtin.current_buffer_fuzzy_find, { desc = '[S]earch current [B]uffer' })
-      vim.keymap.set('n', '<leader>sc', builtin.command_history, { desc = '[S]earch [C]ommand history' })
+      vim.keymap.set('n', '<leader>sc', search_files_in_buffer_dir, { desc = '[S]earch files in [C]current buffer dir' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>se', builtin.live_grep, { desc = '[S]earch by gr[E]p' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+            -- <leader>sg is reserved for git commands.
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>si', builtin.registers, { desc = '[S]earch reg[I]sters' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
+      vim.keymap.set('n', '<leader>sm', builtin.command_history, { desc = '[S]earch co[M]mand history' })
       vim.keymap.set('n', '<leader>sn', search_nvim_config_files, { desc = '[S]earch [N]eovim files' })
       vim.keymap.set('n', '<leader>so', require('telescope').extensions.notify.notify, { desc = '[S]earch n[O]tifications' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })

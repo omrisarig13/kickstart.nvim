@@ -39,6 +39,7 @@ return {
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
+    event = 'VeryLazy',
     opts = {
       on_attach = function(bufnr)
         local gitsigns = require 'gitsigns'
@@ -125,6 +126,15 @@ return {
   {
     -- Add fugitive, flog, and common keymaps.
     'tpope/vim-fugitive',
+    lazy = false,
+    keys = {
+      { '<leader>gc', '<cmd>G commit<cr>', desc = 'Git [C]ommit' },
+      { '<leader>gd', '<cmd>DiffviewOpen<cr>', desc = 'Git [D]if view open' },
+      { '<leader>gf', '<cmd>G commit --fixup=<c-r>"<cr>', desc = 'Git [F]ixup (to unnamed register)' },
+      { '<leader>gp', '<cmd>tabnew <bar> exec "Flog" <bar> G <bar> tabmove-1 <bar> DiffviewOpen <cr>', desc = 'Git [P]age', silent = true },
+      { '<leader>gl', '<cmd>-tabnew <bar> Flog<cr>', desc = 'Git f[L]og' },
+      { '<leader>gq', '<cmd>G commit --squash=<c-r>"<cr>', desc = 'Git s[Q]uash (to unnamed register)' },
+    },
     dependencies = {
       'rbong/vim-flog',
       {
@@ -160,12 +170,7 @@ return {
         vim.cmd 'wincmd K'
       end
 
-      vim.keymap.set('n', '<leader>gc', '<cmd>G commit<cr>', { desc = 'Git [C]ommit' })
-      vim.keymap.set('n', '<leader>gd', '<cmd>DiffviewOpen<cr>', { desc = 'Git [D]if view open' })
-      vim.keymap.set('n', '<leader>gf', '<cmd>G commit --fixup=<c-r>"<cr>', { desc = 'Git [F]ixup (to unnamed register)' })
-      vim.keymap.set('n', '<leader>gp', '<cmd>tabnew <bar> exec "Flog" <bar> G <bar> tabmove-1 <bar> DiffviewOpen <cr>', { desc = 'Git [P]age', silent = true })
-      vim.keymap.set('n', '<leader>gl', '<cmd>-tabnew <bar> Flog<cr>', { desc = 'Git f[L]og' })
-      vim.keymap.set('n', '<leader>gq', '<cmd>G commit --squash=<c-r>"<cr>', { desc = 'Git s[Q]uash (to unnamed register)' })
+      -- TODO: Figure out how to make these into keys as above.
       vim.keymap.set('n', '<leader>gs', function()
         create_show_page 'HEAD'
       end, { desc = 'Git [S]how' })
@@ -174,6 +179,16 @@ return {
       end, { desc = 'Git show commit [U]nder cursor' })
     end,
   },
+  {
+    "art-vasilyev/gerrit-blame.nvim",
+    dependencies = { "tpope/vim-fugitive" },
+    config = function()
+      require("gerrit-blame").setup({
+        gerrit_hosts = { "gerrit.ci.demant.com" },
+        default_host = "gerrit.ci.demant.com",
+      })
+    end,
+  }
 }
 
 -- vim: ts=2 sts=2 sw=2 et foldmethod=marker

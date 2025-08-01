@@ -9,9 +9,7 @@ return {
         -- markdown = { 'markdownlint' },
         markdown = { 'vale', 'markdownlint' },
         -- text = { 'vale' },
-        -- TODO: Re-enable vale after debugging it.
-        -- rst = { 'vale', 'rstcheck', 'rstlint' },
-        rst = { 'rstcheck', 'rstlint' },
+        rst = { 'rstcheck', 'rstlint', 'vale' },
         json = { 'jsonlint' },
         dockerfile = { 'hadolint' },
         bash = { 'bash', 'shellcheck' },

@@ -16,12 +16,12 @@ return {
   --]]
   -- 'tpope/vim-surround',
   -- 'omrisarig13/vim-auto-abbrev',
-  'unblevable/quick-scope',
-  'tpope/vim-abolish',
+  { 'unblevable/quick-scope', event = 'VeryLazy' },
+  { 'tpope/vim-abolish', event = 'VeryLazy' },
   -- 'wellle/targets.vim',
   -- 'michaeljsmith/vim-indent-object',
   -- 'justinmk/vim-ipmotion',
-  'omrisarig13/vim-tab-movements',
+  { 'omrisarig13/vim-tab-movements', event = 'VeryLazy' },
   -- 'airblade/vim-rooter',
   -- 'junegunn/gv.vim',
   -- 'airblade/vim-gitgutter',
@@ -35,9 +35,11 @@ return {
   -- 'dominikduda/vim_current_word',
   -- 'tpope/vim-repeat',
   'jeffkreeftmeijer/vim-numbertoggle',
-  'zhimsel/vim-stay',
+  -- OMSA: This causes nvim to be extremely slow when switching between tabs -
+  -- maybe investigate...
+  -- { 'zhimsel/vim-stay', event = 'VeryLazy' },
   -- 'markonm/traces.vim',
-  'tpope/vim-eunuch',
+  { 'tpope/vim-eunuch', event = 'VeryLazy' },
   -- 'kana/vim-operator-user',
   -- 'mwgkgk/vim-operator-insert',
   -- 'mwgkgk/vim-operator-append',
@@ -73,7 +75,7 @@ return {
   --]]
   {
     'omrisarig13/mistake.nvim',
-    branch = 'omsa/add-current-word',
+    event = 'VeryLazy',
     config = function()
       local plugin = require 'mistake'
       vim.defer_fn(function()
@@ -85,9 +87,39 @@ return {
       vim.keymap.set('n', '<leader>mc', plugin.add_entry_under_cursor, { desc = '[M]istake add [C]urrent word' })
     end,
   },
-
-  -- Just for fun, not really needed.
-  'vuciv/golf',
+  {
+    "dmxk062/hexed.nvim",
+    -- default options
+    cmd = { 'Hexed' },
+    opts = {
+        highlights = {
+            String  = "String",         -- ascii characters
+            Null    = "NonText",        -- null bytes
+            Newline = "SpecialChar",    -- newline characters(\n and \r)
+            Address = "Label",          -- the addresses at the beginning of lines
+            Byte    = "Identifier",     -- any other byte
+            Region  = "Visual",         -- context are in preview buffer
+            Char    = "Substitute",     -- character the cursor is on
+        },
+        command = "Hexed",              -- the command used to invoke hexed
+    }
+  },
+  {
+    '2kabhishek/tdo.nvim',
+    dependencies =  '2kabhishek/pickme.nvim',
+    cmd = { 'Tdo' },
+    keys = {
+      { '<leader>df', '<cmd>Tdo files<cr>', desc = 't[D]o [F]iles' },
+      { '<leader>dt', '<cmd>Tdo todos<cr>', desc = 't[D]o [T]odos' },
+      { '<leader>dd', '<cmd>Tdo<cr>', desc = 't[D]o' },
+    },
+    config = function()
+      require('tdo').setup {
+        use_new_command = true,
+        add_default_keybindings = false,
+      }
+    end
+  },
 
   -- Future plugins... {{{
   -- In case I want to work with GitHub's PR:

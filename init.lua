@@ -175,6 +175,25 @@ vim.o.linebreak = true
 -- TODO: Change by file-type. {{{
 -- Set textwidth to end at 80.
 vim.o.textwidth = 79
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'c', 'cpp' },
+  callback = function()
+    vim.opt_local.textwidth = 120
+  end,
+})
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'rst' },
+  callback = function()
+    vim.opt_local.textwidth = 119
+  end,
+})
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'java' },
+  callback = function()
+    vim.opt_local.textwidth = 149
+  end,
+})
+
 -- Add a colored column at the end of wanted lines.
 vim.o.colorcolumn = '+1'
 -- TODO: Change by file-type. }}}
@@ -186,26 +205,97 @@ vim.api.nvim_create_user_command('Wq', 'wq', {})
 vim.api.nvim_create_user_command('Q', 'windo q', {})
 
 local function format_table()
-  -- Get start line
-  vim.cmd 'normal! {j'
-  local start_line = vim.fn.line '.'
-  -- Remove header line, will be added again in the future
-  vim.cmd 'normal! jdd'
-  -- Get end line
-  vim.cmd 'normal! }k'
-  local end_line = vim.fn.line '.'
-  -- Format the table
-  -- Remove multiple spaces, to let the column command create the minimal
-  -- needed columns
-  vim.cmd(start_line .. ',' .. end_line .. 's/ \\+/ /ge')
-  vim.cmd(start_line .. ',' .. end_line .. "!column -t -s '|' -o '|'")
-  -- Re-create header
-  vim.cmd 'normal! {jyyp' -- Create template for header line.
-  vim.cmd 's/[^|]/-/g' -- Create dashes in header line
-  vim.cmd 's/|-/| /g' -- Remove dashes after separators
-  vim.cmd 's/-|/ |/g' -- Remove dashes before separators
+  -- Save current cursor position
+  local original_pos = vim.api.nvim_win_get_cursor(0)
+
+  -- Find table boundaries using Lua APIs
+  local current_line = vim.fn.line('.')
+  local buffer_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+
+  -- Find start of table (first non-empty line going up)
+  local table_start = current_line
+  while table_start > 1 and buffer_lines[table_start - 1]:match('%S') do
+    table_start = table_start - 1
+  end
+
+  -- Find end of table (last non-empty line going down)
+  local table_end = current_line
+  while table_end < #buffer_lines and buffer_lines[table_end]:match('%S') do
+    table_end = table_end + 1
+  end
+  table_end = table_end - 1
+
+  if table_start >= table_end then
+    print("No table found or table is too small")
+    return
+  end
+
+  -- Get table content and remove headers in one pass
+  local table_lines = {}
+  for i = table_start, table_end do
+    local line = buffer_lines[i]
+    -- Skip header separator lines (lines with only -, =, +, |, and spaces)
+    if not line:match('^[%s|%-%=%+]*$') then
+      -- Normalize spaces around pipes
+      line = line:gsub('%s+|%s+', ' | '):gsub('%s+', ' ')
+      table.insert(table_lines, line)
+    end
+  end
+
+  if #table_lines == 0 then
+    print("No table content found")
+    return
+  end
+
+  -- Format table using column command
+  local formatted_content = table.concat(table_lines, '\n')
+  local handle = io.popen("echo '" .. formatted_content:gsub("'", "'\\''") .. "' | column -t -s '|' -o '|'")
+  local formatted_result = handle:read('*a'):gsub('\n$', '') -- Remove trailing newline
+  handle:close()
+
+  -- Split result back into lines
+  local formatted_lines = vim.split(formatted_result, '\n')
+
+  -- Create separator line pattern based on first line structure
+  local separator_line = ""
+  if #formatted_lines > 0 then
+    separator_line = formatted_lines[1]:gsub('[^|]', '-'):gsub('|', '+')
+  end
+
+  -- Build final table with separators
+  local final_lines = {}
+
+  -- Add top separator
+  if separator_line ~= "" then
+    table.insert(final_lines, separator_line)
+  end
+
+  for i, line in ipairs(formatted_lines) do
+    table.insert(final_lines, line)
+
+    -- Add header separator after first line (header)
+    if i == 1 and separator_line ~= "" then
+      local header_sep = separator_line:gsub('-', '=')
+      table.insert(final_lines, header_sep)
+    -- Add regular separator after each subsequent line (except the last)
+    elseif i > 1 and i < #formatted_lines and separator_line ~= "" then
+      table.insert(final_lines, separator_line)
+    end
+  end
+
+  -- Add bottom separator
+  if separator_line ~= "" then
+    table.insert(final_lines, separator_line)
+  end
+
+  -- Replace original table content
+  vim.api.nvim_buf_set_lines(0, table_start - 1, table_end, false, final_lines)
+
+  -- Restore cursor position (adjust for potential line count changes)
+  local line_diff = #final_lines - (table_end - table_start + 1)
+  local new_row = math.min(original_pos[1] + line_diff, vim.api.nvim_buf_line_count(0))
+  vim.api.nvim_win_set_cursor(0, {new_row, original_pos[2]})
 end
-vim.keymap.set('n', '<leader>pf', format_table, { desc = '[P]ersonal format [T]able' })
 
 -- TODO: Temporary mapping, while still working on re-learning. }}}
 
@@ -215,6 +305,24 @@ vim.o.tabstop = 4
 vim.o.shiftwidth = 4
 vim.o.softtabstop = 4
 vim.o.shiftround = true
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'markdown', 'rst', 'xml' },
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+  end,
+})
+
+local function toggle_tab_width()
+  local current_tabstop = vim.bo.tabstop
+  local new_tabstop = current_tabstop == 2 and 4 or 2
+  vim.bo.tabstop = new_tabstop
+  vim.bo.shiftwidth = new_tabstop
+  vim.bo.softtabstop = new_tabstop
+end
+
+
 -- TODO: Tab options, was not re-investigated yet. }}}
 
 -- Set spell checking.
@@ -222,7 +330,7 @@ vim.o.shiftround = true
 -- proper place.
 vim.o.spell = true
 vim.o.spelllang = 'en_us'
-vim.o.spellfile = '/home/omsa/.config/nvim-kickstart/omsa-spell.utf-8.add'
+vim.o.spellfile = '/home/omsi/.config/nvim-kickstart/omsa-spell.utf-8.add'
 
 vim.keymap.set('n', '<C-Right>', [[<cmd>vertical resize +5<cr>]]) -- make the window biger vertically
 vim.keymap.set('n', '<C-Left>', [[<cmd>vertical resize -5<cr>]]) -- make the window smaller vertically
@@ -230,27 +338,55 @@ vim.keymap.set('n', '<C-Up>', [[<cmd>horizontal resize +2<cr>]]) -- make the win
 vim.keymap.set('n', '<C-Down>', [[<cmd>horizontal resize -2<cr>]]) -- make the window smaller horizontally by pressing shift and -
 
 vim.cmd 'command! Lcdc lcd %:h'
+
+local function copy_file_line_info()
+  local filename = vim.fn.expand('%:t')  -- Get just the filename (not full path)
+  local line_number = vim.api.nvim_win_get_cursor(0)[1]  -- Get current line number
+  local file_line_info = filename .. ':' .. line_number
+  vim.fn.setreg('+', file_line_info)
+end
+
 vim.keymap.set('n', '<leader>pc', ':Lcdc<cr>', { desc = '[P]ersonal [C]hange directory' })
+vim.keymap.set('n', '<leader>pf', format_table, { desc = '[P]ersonal format [T]able' })
+vim.keymap.set('n', '<leader>pt', toggle_tab_width, { desc = '[P]ersonal toggle [T]ab' })
+vim.keymap.set('n', '<leader>pw', ":s/ not/n't/e<cr>:s/ is/'s/e<cr>", { desc = '[P]ersonal fix too [W]ordy' })
+vim.keymap.set('n', '<leader>py', copy_file_line_info, { desc = '[P]ersonal [Y]ank file:line_number to clipboard' })
 
 local function close_tabs_to_right()
   local current_tab_page = vim.fn.tabpagenr()
-
-  local next_tab_info = vim.fn.gettabinfo(current_tab_page + 1)
-  while next(next_tab_info) ~= nil do
-    vim.cmd('tabclose ' .. (current_tab_page + 1))
-    next_tab_info = vim.fn.gettabinfo(current_tab_page + 1)
+  local total_tabs = vim.fn.tabpagenr '$'
+  for tabnr = total_tabs, current_tab_page + 1, -1 do
+    vim.cmd('tabclose ' .. tabnr)
   end
 end
 vim.keymap.set('n', '<leader>tr', close_tabs_to_right, { desc = '[T]ab close tabs to the [R]ight' })
 
 local function close_tabs_to_left()
-  local previous_tab_page = vim.fn.tabpagenr() - 1
-
-  for i = previous_tab_page, 1, -1 do
-    vim.cmd('tabclose ' .. i)
+  local current_tab_page = vim.fn.tabpagenr()
+  for tabnr = current_tab_page - 1, 1, -1 do
+    vim.cmd('tabclose ' .. tabnr)
   end
 end
 vim.keymap.set('n', '<leader>tl', close_tabs_to_left, { desc = '[T]ab close tabs to the [L]eft' })
+
+-- Recognize SCons files as Python
+vim.api.nvim_create_autocmd({ 'BufRead', 'BufNewFile' }, {
+  pattern = { 'SConstruct', 'SConscript', '*.scons' },
+  callback = function()
+    vim.bo.filetype = 'python'
+  end,
+})
+
+-- Remap <c-t> to tab, instead of moving the whole line
+vim.keymap.set('i', '<c-t>', '<Tab>')
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'git',
+  callback = function()
+    vim.opt_local.foldmethod = 'syntax'
+  end,
+})
+
 -- [[ TMP Setting Options ]] }}}
 
 -- [[ Basic Keymaps ]] {{{
@@ -270,10 +406,10 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
 --  OMSA: Takes a bit of getting used to, but looks nice.
--- vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
--- vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
--- vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
--- vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
+vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
+vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
+vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- [[ Basic Keymaps ]] }}}
 
@@ -319,6 +455,10 @@ rtp:prepend(lazypath)
 --
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
+  {
+    dir = '/home/omsi/.config/nvim-kickstart/pack/demant/start/demant/',
+    lazy = false,
+  },
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   --
   -- OMSA: Looks like a good plugin, when the files are consistent. But,
@@ -410,6 +550,7 @@ require('lazy').setup({
       -- Allows extra capabilities provided by blink.cmp
       'saghen/blink.cmp',
     },
+    -- TODO: Figure out if more files are wanted here.
     config = function()
       -- Brief aside: **What is LSP?**
       --
@@ -462,20 +603,32 @@ require('lazy').setup({
           map('gra', vim.lsp.buf.code_action, '[G]oto Code [A]ction', { 'n', 'x' })
 
           -- Find references for the word under your cursor.
-          map('grr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+          map('grr', function()
+            vim.cmd 'vsplit'
+            require('telescope.builtin').lsp_references()
+          end, '[G]oto [R]eferences')
 
           -- Jump to the implementation of the word under your cursor.
           --  Useful when your language has ways of declaring types without an actual implementation.
-          map('gri', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+          map('gri', function()
+            vim.cmd 'vsplit'
+            require('telescope.builtin').lsp_implementations()
+          end, '[G]oto [I]mplementation')
 
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.
-          map('grd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+          map('grd', function()
+            vim.cmd 'vsplit'
+            require('telescope.builtin').lsp_definitions()
+          end, '[G]oto [D]efinition')
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
-          map('grD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+          map('grD', function()
+            vim.cmd 'vsplit'
+            vim.lsp.buf.declaration()
+          end, '[G]oto [D]eclaration')
 
           -- Fuzzy find all the symbols in your current document.
           --  Symbols are things like variables, functions, types, etc.
@@ -488,7 +641,33 @@ require('lazy').setup({
           -- Jump to the type of the word under your cursor.
           --  Useful when you're not sure what type a variable is and you want to see
           --  the definition of its *type*, not where it was *defined*.
-          map('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
+          map('grt', function()
+            vim.cmd 'vsplit'
+            require('telescope.builtin').lsp_type_definitions()
+          end, '[G]oto [T]ype Definition')
+          --
+          -- gR-prefixed mappings: open in current window
+          map('gRr', function()
+            require('telescope.builtin').lsp_references()
+          end, '[G]oto [R]eferences (current window)')
+          map('gRi', function()
+            require('telescope.builtin').lsp_implementations()
+          end, '[G]oto [I]mplementation (current window)')
+          map('gRd', function()
+            require('telescope.builtin').lsp_definitions()
+          end, '[G]oto [D]efinition (current window)')
+          map('gRD', function()
+            vim.lsp.buf.declaration()
+          end, '[G]oto [D]eclaration (current window)')
+          map('gRO', function()
+            require('telescope.builtin').lsp_document_symbols()
+          end, 'Open Document Symbols (current window)')
+          map('gRW', function()
+            require('telescope.builtin').lsp_dynamic_workspace_symbols()
+          end, 'Open Workspace Symbols (current window)')
+          map('gRt', function()
+            require('telescope.builtin').lsp_type_definitions()
+          end, '[G]oto [T]ype Definition (current window)')
 
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
@@ -593,6 +772,7 @@ require('lazy').setup({
         -- gopls = {},
         pyright = {},
         bashls = {},
+        jdtls = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -652,26 +832,40 @@ require('lazy').setup({
           end,
         },
       }
-      -- TODO: This will not work with the above system, but I could not figure
-      -- out why/how. This should be investigated further.
-      require('lspconfig').bitbake_ls.setup {}
       --[[ This adds a ton of error messages, so for now we don't want it.
-      require('lspconfig').bitbake_language_server.setup {
-        handlers = {
-          ['window/showMessage'] = function(_, result, _)
-            local message_type = result.type
-            local message_text = result.message
+    require('lspconfig').bitbake_language_server.setup {
+      handlers = {
+        ['window/showMessage'] = function(_, result, _)
+          local message_type = result.type
+          local message_text = result.message
 
-            -- Only show ERROR (1) and WARN (2)
-            if message_type == 1 or message_type == 2 then
-              vim.notify(string.format('[bitbake] %s', message_text), message_type == 1 and vim.log.levels.ERROR or vim.log.levels.WARN)
-            end
-          end,
-        },
-      }
-      --]]
+          -- Only show ERROR (1) and WARN (2)
+          if message_type == 1 or message_type == 2 then
+            vim.notify(string.format('[bitbake] %s', message_text), message_type == 1 and vim.log.levels.ERROR or vim.log.levels.WARN)
+          end
+        end,
+      },
+    }
+    --]]
     end,
   },
+  -- {
+  --   'mfussenegger/nvim-jdtls',
+  --   ft = { 'java' },
+  --   config = function()
+  --     local conf = {
+  --       cmd = { '/home/omsi/Programs/jdtls/bin/jdtls' },
+  --       root_dir = require('jdtls.setup').find_root { '.git', 'mvnw', 'gradlew', 'pom.xml', 'build.gradle' },
+  --       init_options = {
+  --         bundles = {},
+  --       },
+  --     }
+  --     require('jdtls').start_or_attach(conf)
+  --     vim.keymap.set('n', '<leader>pj', function()
+  --       require('jdtls').start_or_attach(conf)
+  --     end)
+  --   end,
+  -- },
   -- Main LSP Configuration }}}
 
   { -- Autoformat {{{
@@ -694,7 +888,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { kotlin = true, java = true, python = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -707,19 +901,100 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        python = { 'isort', 'black' },
+        python = { 'blue' },
+        -- python = { 'isort', 'black' },
+        c = { 'clang-format' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        -- java = { 'eclipse_format', 'tab_to_spaces_format' },
+        -- java = { 'google-java-format', 'tab2_to_tab4_format' },
+        java = { 'configurable_java_format' },
+      },
+      formatters = {
+        eclipse_format = {
+          command = '/scratch/omsi/toolsuites/gearbox/eclipseg/eclipse-for-gearbox-4.16.0-jre8u202/eclipse',
+          inherit = false,
+          args = {
+            '-noSplash',
+            '-application',
+            'org.eclipse.jdt.core.JavaCodeFormatter',
+            '-config',
+            '/scratch/omsi/quantum/repo/tools/wombat/OticonJavaStyle2.xml',
+            '$FILENAME',
+          },
+          stdin = false,
+        },
+        tab_to_spaces_format = {
+          command = 'expand',
+          args = { '-t', '4' },
+        },
+        tab2_to_tab4_format = {
+          command = 'awk',
+          args = { [[{ match($0, /^ */); lead=substr($0, 1, RLENGTH); rest=substr($0, RLENGTH+1); gsub(/  /, "    ", lead); print lead rest }]] },
+        },
+        configurable_java_format = {
+          command = 'java',
+          args = {
+            '-jar',
+            os.getenv 'HOME' .. '/Programs/formatters/configurable-google-java-format-2025.21.2-all-deps.jar',
+            '-a',
+            '--width',
+            '150',
+            '-',
+          },
+          stdin = true,
+        },
       },
     },
   },
   -- Autoformat }}}
 
+  -- Adds ~60ms load time...
   {
     'nvim-lualine/lualine.nvim',
-    dependencies = { 'nvim-tree/nvim-web-devicons', 'dpetka2001/noice.nvim' },
+    dependencies = { 'nvim-tree/nvim-web-devicons', 'dpetka2001/noice.nvim', 'nvim-lua/plenary.nvim' },
     config = function()
+      local path_from_root = {
+        function()
+          local Path = require 'plenary.path'
+          local git_root = Path:new(vim.fn.expand '%:p'):find_upwards '.git'
+          if git_root then
+            local root = git_root:parent():absolute()
+            local file = vim.fn.expand '%:p'
+            local path = Path:new(file):parent():make_relative(root)
+            if path == '.' then
+              return ''
+            else
+              return path
+            end
+          else
+            return ''
+          end
+        end,
+        icon = '',
+        shorting_target = 40,
+      }
+      local cwd_from_repo_root = {
+        function()
+          local Path = require 'plenary.path'
+          local cwd = vim.loop.cwd()
+          local git_root = Path:new(cwd):find_upwards '.git'
+          if git_root then
+            local root = git_root:parent():absolute()
+            local path = Path:new(cwd):make_relative(root)
+            if path == '.' then
+              return ''
+            else
+              return path
+            end
+          else
+            return ''
+          end
+        end,
+        icon = '',
+        shorting_target = 40,
+      }
       require('lualine').setup {
         options = {
           icons_enabled = true,
@@ -743,7 +1018,7 @@ require('lazy').setup({
         sections = {
           lualine_a = { 'mode' },
           lualine_b = { 'branch', 'diff', 'diagnostics' },
-          lualine_c = { 'filename' },
+          lualine_c = { path_from_root, { 'filename', icon = '' }, cwd_from_repo_root },
           lualine_x = { 'encoding', 'fileformat', 'filetype' },
           lualine_y = {
             {
@@ -755,8 +1030,8 @@ require('lazy').setup({
         },
         inactive_sections = {
           lualine_a = {},
-          lualine_b = {},
-          lualine_c = { 'filename' },
+          lualine_b = { 'branch' },
+          lualine_c = { path_from_root, 'filename' },
           lualine_x = { 'location' },
           lualine_y = {},
           lualine_z = {},
@@ -770,6 +1045,7 @@ require('lazy').setup({
   },
 
   -- Noice {{{
+  -- Adds a minimum of 60ms to startup, and sometimes up to 500ms????
   {
     -- 'folke/noice.nvim',
     'dpetka2001/noice.nvim',
@@ -777,11 +1053,11 @@ require('lazy').setup({
     event = 'VeryLazy',
     dependencies = {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
-      'MunifTanjim/nui.nvim',
+      { 'MunifTanjim/nui.nvim', event = 'VeryLazy' },
       -- OPTIONAL:
       --   `nvim-notify` is only needed, if you want to use the notification view.
       --   If not available, we use `mini` as the fallback
-      'rcarriga/nvim-notify',
+      { 'rcarriga/nvim-notify', event = 'VeryLazy' },
     },
     config = function()
       require('noice').setup {
@@ -808,7 +1084,7 @@ require('lazy').setup({
 
   { -- Autocompletion {{{
     'saghen/blink.cmp',
-    event = 'VimEnter',
+    event = 'VeryLazy',
     version = '1.*',
     dependencies = {
       -- Snippet Engine
@@ -903,6 +1179,12 @@ require('lazy').setup({
       sources = {
         default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer', 'omni' },
         providers = {
+          cmdline = {
+            -- ignores cmdline completions when executing shell commands
+            enabled = function()
+              return vim.fn.getcmdtype() ~= ':' or not vim.fn.getcmdline():match "^[%%0-9,'<>%-]*!"
+            end,
+          },
           lsp = {
             fallbacks = {},
           },
@@ -951,13 +1233,14 @@ require('lazy').setup({
   -- Highlight todo, notes, etc in comments
   {
     'folke/todo-comments.nvim',
-    event = 'VimEnter',
+    event = 'VeryLazy',
     dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
       require('todo-comments').setup {
         signs = false,
         keywords = {
           OMSA = { icon = ' ', color = 'info' },
+          OMSI = { icon = ' ', color = 'info' },
         },
       }
       vim.keymap.set('n', ']f', function()
@@ -972,6 +1255,7 @@ require('lazy').setup({
 
   { -- Collection of various small independent plugins/modules {{{
     'echasnovski/mini.nvim',
+    event = 'VeryLazy',
     config = function()
       -- Better Around/Inside textobjects
       --
@@ -1019,22 +1303,9 @@ require('lazy').setup({
       -- [v]: gA= Align equal signs in selected visual.
       require('mini.align').setup()
 
-      -- Move lines and selected text around
-      require('mini.move').setup {
-        mappings = {
-          -- Move visual selection in Visual mode. Defaults are Alt (Meta) + hjkl.
-          left = '<C-h>',
-          right = '<C-l>',
-          down = '<C-j>',
-          up = '<C-k>',
-
-          -- Move current line in Normal mode
-          line_left = '<C-h>',
-          line_right = '<C-l>',
-          line_down = '<C-j>',
-          line_up = '<C-k>',
-        },
-      }
+      -- Move lines and selected text around using alt+movement, in both visual
+      -- and normal mode
+      require('mini.move').setup()
 
       -- Some cool operators
       --
@@ -1157,6 +1428,7 @@ require('lazy').setup({
   -- Collection of various small independent plugins/modules }}}
   { -- Highlight, edit, and navigate code {{{
     'nvim-treesitter/nvim-treesitter',
+    event = 'VeryLazy',
     build = ':TSUpdate',
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
@@ -1185,6 +1457,7 @@ require('lazy').setup({
   {
     -- TODO: Read the docs, and understand if more options can be good.
     'MeanderingProgrammer/render-markdown.nvim',
+    event = 'VeryLazy',
     dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' },
   },
   -- Temporary plugins: }}}
@@ -1210,14 +1483,13 @@ require('lazy').setup({
   require 'kickstart.plugins.telescope',
   require 'custom.plugins.vim-port',
   require 'custom.plugins.flash',
-
   -- Copilot {{{
-  --[[
   {
     'github/copilot.vim',
+    event = 'VeryLazy',
     config = function()
       -- Disabe by default, ask for specific suggestion with c-space.
-      vim.cmd 'Copilot disable'
+      -- vim.cmd 'Copilot disable'
       vim.keymap.set('i', '<C-space>', '<Plug>(copilot-suggest)')
       vim.keymap.set('i', '<C-b>', '<Plug>(copilot-next)')
 
@@ -1229,7 +1501,7 @@ require('lazy').setup({
       -- running "Copilot enable/disable"). In this case, the next toggle
       -- keymap will not change the copilot settings. That's okay here, as I'll
       -- always be using the keymap to toggle it.
-      vim.g.copilot_enabled = false
+      vim.g.copilot_enabled = true
       vim.keymap.set('n', '<leader>tc', function()
         if vim.g.copilot_enabled then
           vim.cmd 'Copilot disable'
@@ -1243,11 +1515,53 @@ require('lazy').setup({
       end, { desc = '[C]opilot [T]oggle' })
 
       vim.keymap.set('n', '<leader>uc', ':Copilot status<CR>', { desc = 'Stat[U]s [C]opilot' })
+
+      -- Accept Copilot suggestion with Ctrl-Space only in Copilot Chat window
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'copilot-chat',
+        callback = function()
+          vim.keymap.set('i', '<C-E>', 'copilot#Accept("\\<CR>")', {
+            expr = true,
+            replace_keycodes = false,
+          })
+        end,
+      })
     end,
   },
-  --]]
+  {
+    'CopilotC-Nvim/CopilotChat.nvim',
+    dependencies = {
+      { 'github/copilot.vim' }, -- or zbirenbaum/copilot.lua
+      { 'nvim-lua/plenary.nvim', branch = 'master' }, -- for curl, log and async functions
+    },
+    build = 'make tiktoken', -- Only on MacOS or Linux
+    keys = {
+      { '<leader>cc', '<cmd>CopilotChatOpen<cr>', mode = { 'n', 'v' }, desc = '[C]opilot [C]hat open' },
+      { '<leader>ce', '<cmd>CopilotChatExplain<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [E]xplain' },
+      { '<leader>cf', '<cmd>CopilotChatFix<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [F]ix' },
+      { '<leader>cm', '<cmd>CopilotChatCommit<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat co[M]mit' },
+      { '<leader>co', '<cmd>CopilotChatOptimize<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [O]ptimize' },
+      { '<leader>cp', '<cmd>CopilotChatPrompts<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [P]rompts' },
+      { '<leader>cr', '<cmd>CopilotChatReview<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [R]eview' },
+    },
+    config = function()
+      require('CopilotChat').setup {model = 'claude-sonnet-4'}
+
+      vim.api.nvim_create_autocmd('BufReadPost', {
+        pattern = '*',
+        callback = function()
+          if vim.bo.filetype == 'markdown' and (vim.fn.search('^@@', 'nw') > 0 or vim.fn.search('^diff --git', 'nw') > 0) then
+            vim.bo.filetype = 'diff'
+            vim.wo.conceallevel = 0
+          end
+        end,
+      })
+    end,
+    -- See Commands section for default commands if you want to lazy load on them
+  },
   -- Copilot }}}
   {
+    -- Can add around 100ms, consider investigating more.
     'folke/snacks.nvim',
     priority = 1000,
     lazy = false,
@@ -1277,6 +1591,23 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>og', function()
         snacks.gitbrowse()
       end, { desc = 'Snacks [G]it browse (remote)' })
+    end,
+  },
+  {
+    'nvim-lua/plenary.nvim',
+    event = 'VeryLazy',
+    config = function()
+      local function cd_git_root()
+        local Path = require 'plenary.path'
+        local git_root = Path:new('.'):find_upwards '.git'
+        if git_root then
+          vim.cmd('cd ' .. git_root:parent():absolute())
+        else
+          print 'Not inside a git repository'
+        end
+      end
+
+      vim.keymap.set('n', '<leader>pr', cd_git_root, { desc = '[P]ersonal change directory to [R]oot' })
     end,
   },
 
