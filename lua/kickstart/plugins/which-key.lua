@@ -57,7 +57,7 @@ return {
       spec = {
 
         { '<leader>c', group = '[C]opilot' },
-        { '<leader>d', group = 't[D]o' },
+        { '<leader>d', group = '[D]ap/t[D]o' },
         { '<leader>g', group = '[G]it commands' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
         { '<leader>hd', group = 'Git [H]unk [D]if' },

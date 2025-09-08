@@ -15,6 +15,7 @@ return {
         bash = { 'bash', 'shellcheck' },
         gitcommit = { 'gitlint' },
         python = { 'flake8', 'pylint' },
+        -- python = { 'flake8', 'pylint' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,

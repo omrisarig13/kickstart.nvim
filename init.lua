@@ -888,7 +888,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { kotlin = true, java = true, python = true }
+        local disable_filetypes = { kotlin = true, java = true, python = true, cpp=true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -901,7 +901,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        python = { 'blue' },
+        python = { 'black' },
         -- python = { 'isort', 'black' },
         c = { 'clang-format' },
         --
@@ -1332,7 +1332,13 @@ require('lazy').setup({
       -- This is a different implementation for diff handling in nvim.
       -- Currently, I'm happy with the default handling, but this can be
       -- re-evaluated later, if more features are needed/wanted.
-      -- require('mini.diff').setup()
+      --
+      -- This is wanted for codecompanion, and disabled by default.
+      local diff = require("mini.diff")
+      diff.setup({
+        -- Disabled by default
+        source = diff.gen_source.none(),
+      })
 
       -- Better handling when opening directory as file.
       --
@@ -1454,12 +1460,13 @@ require('lazy').setup({
   },
   -- Highlight, edit, and navigate code }}}
   -- Temporary plugins: {{{
-  {
-    -- TODO: Read the docs, and understand if more options can be good.
-    'MeanderingProgrammer/render-markdown.nvim',
-    event = 'VeryLazy',
-    dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' },
-  },
+  -- {
+  --   -- TODO: Read the docs, and understand if more options can be good.
+  --   'MeanderingProgrammer/render-markdown.nvim',
+  --   event = 'VeryLazy',
+  --   dependencies = { 'nvim-treesitter/nvim-treesitter', 'echasnovski/mini.nvim' },
+  --   ft = { "markdown", "codecompanion" }
+  -- },
   -- Temporary plugins: }}}
 
   -- Next Steps {{{
@@ -1545,7 +1552,15 @@ require('lazy').setup({
       { '<leader>cr', '<cmd>CopilotChatReview<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [R]eview' },
     },
     config = function()
-      require('CopilotChat').setup {model = 'claude-sonnet-4'}
+      local local_prompts = require('CopilotChat.config.prompts')
+      local_prompts['Commit'] = {
+        prompt = 'Write commit message for the change with commitizen convention. Keep the title under 50 characters and wrap message at 72 characters. Format as a gitcommit code block.',
+        sticky = '#buffer',
+      }
+      require('CopilotChat').setup {
+        model = 'claude-sonnet-4',
+        prompts = local_prompts
+      }
 
       vim.api.nvim_create_autocmd('BufReadPost', {
         pattern = '*',
@@ -1558,6 +1573,30 @@ require('lazy').setup({
       })
     end,
     -- See Commands section for default commands if you want to lazy load on them
+  },
+  {
+    -- TODO: Look further into it, to understand if it can be utilized better.
+    -- It creates more of an agentic model, but I'm not sure how happy I'm with
+    -- that in a normal workflow.
+    "olimorris/codecompanion.nvim",
+    cmd = { 'CodeCompanion', 'CodeCompanionChat' },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+    },
+    opts = {
+      strategies = {
+        chat = {
+          adapter = "copilot",
+        },
+      },
+      inline = {
+        adapter = "copilot",
+      },
+      opts = {
+        log_level = "DEBUG",
+      },
+    },
   },
   -- Copilot }}}
   {

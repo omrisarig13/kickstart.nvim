@@ -120,6 +120,124 @@ return {
       }
     end
   },
+  {
+    'mfussenegger/nvim-dap',
+    dependencies = {"rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python", "nvim-neotest/nvim-nio"},
+    cmd = { 'DapContinue', 'DapToggleBreakpoint', 'DapNew' },
+    keys = {
+      { '<leader>db', '<cmd>DapToggleBreakpoint<cr>', desc = '[D]ap toggle [B]reakpoint' },
+      { '<leader>dn', '<cmd>DapNew<cr>', desc = '[D]ap [N]ew session' },
+      { '<leader>ds', '<cmd>DapTerminate<cr>', desc = '[D]ap [S]top' },
+    },
+    config = function()
+      local dap = require('dap')
+      dap.set_log_level('TRACE')
+
+      dap.adapters.gdb = {
+        type = "executable",
+        command = "gdb",
+        args = { "--interpreter=dap", "--eval-command", "set print pretty on" }
+      }
+
+      dap.configurations.c = {
+        -- {
+        --   name = "Launch",
+        --   type = "gdb",
+        --   request = "launch",
+        --   program = function()
+        --     return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        --   end,
+        --   cwd = "${workspaceFolder}",
+        --   stopAtBeginningOfMainSubprogram = true,
+        -- },
+        -- {
+        --   name = "Select and attach to process",
+        --   type = "gdb",
+        --   request = "attach",
+        --   program = function()
+        --     return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        --   end,
+        --   pid = function()
+        --     local name = vim.fn.input('Executable name (filter): ')
+        --     return require("dap.utils").pick_process({ filter = name })
+        --   end,
+        --   cwd = '${workspaceFolder}'
+        -- },
+        {
+          name = 'Attach to gdbserver :2331',
+          type = 'gdb',
+          request = 'attach',
+          target = 'localhost:2331',
+          program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+          end,
+          cwd = '${workspaceFolder}',
+          stopOnEntry = true,
+        },
+        {
+          name = 'Quantum: Hello Zephyr',
+          type = 'gdb',
+          request = 'attach',
+          target = 'localhost:2331',
+          program = '/scratch/omsi/quantum/repo/obj/higgs/higgs_mcu/apps/hello_zephyr/hello_zephyr_package/package/zephyr_build/hello_zephyr/zephyr/zephyr.elf',
+          cwd = '${workspaceFolder}',
+          stopOnEntry = true,
+        },
+      }
+
+      -- Dap Python setup
+      require('dap-python').setup('/home/omsi/.venv/bin/python')
+
+      -- Dap UI Setup
+      local dapui = require("dapui")
+
+      dapui.setup()
+
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated.dapui_config = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
+
+      -- Keymaps during debugging
+      dap.listeners.before.event_initialized.create_mapping = function()
+        vim.keymap.set('n', '<Enter>', dap.continue, { desc = 'Continue' })
+        vim.keymap.set('n', '<Down>', dap.step_over, { desc = 'Step over' })
+        vim.keymap.set('n', '<Up>', dap.restart_frame, { desc = 'Restart Frame' })
+        vim.keymap.set('n', '<Right>', dap.step_into, { desc = 'Step into' })
+        vim.keymap.set('n', '<Left>', dap.step_out, { desc = 'Step out' })
+        vim.keymap.set({'v', 'n'}, '<M-s>', dapui.eval, { desc = 'Evaluate expression under cursor' })
+      end
+      dap.listeners.before.event_terminated.create_mapping = function()
+        vim.keymap.del('n', '<Enter>')
+        vim.keymap.del('n', '<Down>')
+        vim.keymap.del('n', '<Up>')
+        vim.keymap.del('n', '<Right>')
+        vim.keymap.del('n', '<Left>')
+        vim.keymap.del({'v', 'n'}, '<M-s>')
+      end
+
+    end
+  },
+  {
+    'stevearc/oil.nvim',
+
+    config = function()
+      require('oil').setup {
+        default_file_explorer = true,
+        columns = { "icon", "permissions", "size", "mtime", },
+        constrain_cursor = "name",
+      }
+    end,
+
+  },
 
   -- Future plugins... {{{
   -- In case I want to work with GitHub's PR:
