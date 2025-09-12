@@ -16,8 +16,8 @@ return {
   --]]
   -- 'tpope/vim-surround',
   -- 'omrisarig13/vim-auto-abbrev',
-  { 'unblevable/quick-scope', event = 'VeryLazy' },
-  { 'tpope/vim-abolish', event = 'VeryLazy' },
+  { 'unblevable/quick-scope',        event = 'VeryLazy' },
+  { 'tpope/vim-abolish',             event = 'VeryLazy' },
   -- 'wellle/targets.vim',
   -- 'michaeljsmith/vim-indent-object',
   -- 'justinmk/vim-ipmotion',
@@ -92,26 +92,26 @@ return {
     -- default options
     cmd = { 'Hexed' },
     opts = {
-        highlights = {
-            String  = "String",         -- ascii characters
-            Null    = "NonText",        -- null bytes
-            Newline = "SpecialChar",    -- newline characters(\n and \r)
-            Address = "Label",          -- the addresses at the beginning of lines
-            Byte    = "Identifier",     -- any other byte
-            Region  = "Visual",         -- context are in preview buffer
-            Char    = "Substitute",     -- character the cursor is on
-        },
-        command = "Hexed",              -- the command used to invoke hexed
+      highlights = {
+        String  = "String",          -- ascii characters
+        Null    = "NonText",         -- null bytes
+        Newline = "SpecialChar",     -- newline characters(\n and \r)
+        Address = "Label",           -- the addresses at the beginning of lines
+        Byte    = "Identifier",      -- any other byte
+        Region  = "Visual",          -- context are in preview buffer
+        Char    = "Substitute",      -- character the cursor is on
+      },
+      command = "Hexed",             -- the command used to invoke hexed
     }
   },
   {
     '2kabhishek/tdo.nvim',
-    dependencies =  '2kabhishek/pickme.nvim',
+    dependencies = '2kabhishek/pickme.nvim',
     cmd = { 'Tdo' },
     keys = {
       { '<leader>df', '<cmd>Tdo files<cr>', desc = 't[D]o [F]iles' },
       { '<leader>dt', '<cmd>Tdo todos<cr>', desc = 't[D]o [T]odos' },
-      { '<leader>dd', '<cmd>Tdo<cr>', desc = 't[D]o' },
+      { '<leader>dd', '<cmd>Tdo<cr>',       desc = 't[D]o' },
     },
     config = function()
       require('tdo').setup {
@@ -122,12 +122,12 @@ return {
   },
   {
     'mfussenegger/nvim-dap',
-    dependencies = {"rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python", "nvim-neotest/nvim-nio"},
+    dependencies = { "rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python", "nvim-neotest/nvim-nio" },
     cmd = { 'DapContinue', 'DapToggleBreakpoint', 'DapNew' },
     keys = {
       { '<leader>db', '<cmd>DapToggleBreakpoint<cr>', desc = '[D]ap toggle [B]reakpoint' },
-      { '<leader>dn', '<cmd>DapNew<cr>', desc = '[D]ap [N]ew session' },
-      { '<leader>ds', '<cmd>DapTerminate<cr>', desc = '[D]ap [S]top' },
+      { '<leader>dn', '<cmd>DapNew<cr>',              desc = '[D]ap [N]ew session' },
+      { '<leader>ds', '<cmd>DapTerminate<cr>',        desc = '[D]ap [S]top' },
     },
     config = function()
       local dap = require('dap')
@@ -179,7 +179,8 @@ return {
           type = 'gdb',
           request = 'attach',
           target = 'localhost:2331',
-          program = '/scratch/omsi/quantum/repo/obj/higgs/higgs_mcu/apps/hello_zephyr/hello_zephyr_package/package/zephyr_build/hello_zephyr/zephyr/zephyr.elf',
+          program =
+          '/scratch/omsi/quantum/repo/obj/higgs/higgs_mcu/apps/hello_zephyr/hello_zephyr_package/package/zephyr_build/hello_zephyr/zephyr/zephyr.elf',
           cwd = '${workspaceFolder}',
           stopOnEntry = true,
         },
@@ -213,7 +214,7 @@ return {
         vim.keymap.set('n', '<Up>', dap.restart_frame, { desc = 'Restart Frame' })
         vim.keymap.set('n', '<Right>', dap.step_into, { desc = 'Step into' })
         vim.keymap.set('n', '<Left>', dap.step_out, { desc = 'Step out' })
-        vim.keymap.set({'v', 'n'}, '<M-s>', dapui.eval, { desc = 'Evaluate expression under cursor' })
+        vim.keymap.set({ 'v', 'n' }, '<M-s>', dapui.eval, { desc = 'Evaluate expression under cursor' })
       end
       dap.listeners.before.event_terminated.create_mapping = function()
         vim.keymap.del('n', '<Enter>')
@@ -221,9 +222,8 @@ return {
         vim.keymap.del('n', '<Up>')
         vim.keymap.del('n', '<Right>')
         vim.keymap.del('n', '<Left>')
-        vim.keymap.del({'v', 'n'}, '<M-s>')
+        vim.keymap.del({ 'v', 'n' }, '<M-s>')
       end
-
     end
   },
   {

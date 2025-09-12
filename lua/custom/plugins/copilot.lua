@@ -49,23 +49,24 @@ return {
   {
     'CopilotC-Nvim/CopilotChat.nvim',
     dependencies = {
-      { 'github/copilot.vim' }, -- or zbirenbaum/copilot.lua
+      { 'github/copilot.vim' },                       -- or zbirenbaum/copilot.lua
       { 'nvim-lua/plenary.nvim', branch = 'master' }, -- for curl, log and async functions
     },
-    build = 'make tiktoken', -- Only on MacOS or Linux
+    build = 'make tiktoken',                          -- Only on MacOS or Linux
     keys = {
-      { '<leader>cc', '<cmd>CopilotChatOpen<cr>', mode = { 'n', 'v' }, desc = '[C]opilot [C]hat open' },
-      { '<leader>ce', '<cmd>CopilotChatExplain<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [E]xplain' },
-      { '<leader>cf', '<cmd>CopilotChatFix<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [F]ix' },
-      { '<leader>cm', '<cmd>CopilotChatCommit<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat co[M]mit' },
+      { '<leader>cc', '<cmd>CopilotChatOpen<cr>',     mode = { 'n', 'v' }, desc = '[C]opilot [C]hat open' },
+      { '<leader>ce', '<cmd>CopilotChatExplain<cr>',  mode = { 'n', 'v' }, desc = '[C]opilot chat [E]xplain' },
+      { '<leader>cf', '<cmd>CopilotChatFix<cr>',      mode = { 'n', 'v' }, desc = '[C]opilot chat [F]ix' },
+      { '<leader>cm', '<cmd>CopilotChatCommit<cr>',   mode = { 'n', 'v' }, desc = '[C]opilot chat co[M]mit' },
       { '<leader>co', '<cmd>CopilotChatOptimize<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [O]ptimize' },
-      { '<leader>cp', '<cmd>CopilotChatPrompts<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [P]rompts' },
-      { '<leader>cr', '<cmd>CopilotChatReview<cr>', mode = { 'n', 'v' }, desc = '[C]opilot chat [R]eview' },
+      { '<leader>cp', '<cmd>CopilotChatPrompts<cr>',  mode = { 'n', 'v' }, desc = '[C]opilot chat [P]rompts' },
+      { '<leader>cr', '<cmd>CopilotChatReview<cr>',   mode = { 'n', 'v' }, desc = '[C]opilot chat [R]eview' },
     },
     config = function()
       local local_prompts = require('CopilotChat.config.prompts')
       local_prompts['Commit'] = {
-        prompt = 'Write commit message for the change with commitizen convention. Keep the title under 50 characters and wrap message at 72 characters. Format as a gitcommit code block.',
+        prompt =
+        'Write commit message for the change with commitizen convention. Keep the title under 50 characters and wrap message at 72 characters. Format as a gitcommit code block.',
         sticky = '#buffer',
       }
       require('CopilotChat').setup {
