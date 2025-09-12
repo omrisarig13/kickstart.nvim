@@ -42,6 +42,8 @@ return {
           })
         end,
       })
+
+      vim.g.copilot_filetypes = { gitcommit = true }
     end,
   },
   {

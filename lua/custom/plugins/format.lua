@@ -1,5 +1,5 @@
 return {
-  {   -- Autoformat {{{
+  { -- Autoformat {{{
     'stevearc/conform.nvim',
     event = { 'BufWritePre' },
     cmd = { 'ConformInfo' },
@@ -19,7 +19,7 @@ return {
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { kotlin = true, java = true, python = true, cpp = true }
+        local disable_filetypes = { lua = true, kotlin = true, java = true, python = true, cpp = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -30,7 +30,7 @@ return {
         end
       end,
       formatters_by_ft = {
-        lua = { 'stylua' },
+        lua = { 'luaformatter' },
         -- Conform can also run multiple formatters sequentially
         python = { 'black' },
         -- python = { 'isort', 'black' },

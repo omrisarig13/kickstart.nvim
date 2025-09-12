@@ -128,12 +128,12 @@ return {
     'tpope/vim-fugitive',
     lazy = false,
     keys = {
-      { '<leader>gc', '<cmd>G commit<cr>', desc = 'Git [C]ommit' },
-      { '<leader>gd', '<cmd>DiffviewOpen<cr>', desc = 'Git [D]if view open' },
-      { '<leader>gf', '<cmd>G commit --fixup=<c-r>"<cr>', desc = 'Git [F]ixup (to unnamed register)' },
-      { '<leader>gp', '<cmd>tabnew <bar> exec "Flog" <bar> G <bar> tabmove-1 <bar> DiffviewOpen <cr>', desc = 'Git [P]age', silent = true },
-      { '<leader>gl', '<cmd>-tabnew <bar> Flog<cr>', desc = 'Git f[L]og' },
-      { '<leader>gq', '<cmd>G commit --squash=<c-r>"<cr>', desc = 'Git s[Q]uash (to unnamed register)' },
+      { '<leader>gc', '<cmd>G commit<cr>',                                                             desc = 'Git [C]ommit' },
+      { '<leader>gd', '<cmd>DiffviewOpen<cr>',                                                         desc = 'Git [D]if view open' },
+      { '<leader>gf', '<cmd>G commit --fixup=<c-r>"<cr>',                                              desc = 'Git [F]ixup (to unnamed register)' },
+      { '<leader>gp', '<cmd>tabnew <bar> exec "Flog" <bar> G <bar> tabmove-1 <bar> DiffviewOpen <cr>', desc = 'Git [P]age',                        silent = true },
+      { '<leader>gl', '<cmd>-tabnew <bar> Flog<cr>',                                                   desc = 'Git f[L]og' },
+      { '<leader>gq', '<cmd>G commit --squash=<c-r>"<cr>',                                             desc = 'Git s[Q]uash (to unnamed register)' },
     },
     dependencies = {
       'rbong/vim-flog',
@@ -142,11 +142,11 @@ return {
         opts = {
           keymaps = {
             file_panel = {
-              { 'n', 'cc', '<Cmd>Git commit <bar> wincmd K<CR>', { desc = 'Commit staged changes' } },
+              { 'n', 'cc', '<Cmd>Git commit <bar> wincmd K<CR>',         { desc = 'Commit staged changes' } },
               { 'n', 'ca', '<Cmd>Git commit --amend <bar> wincmd K<CR>', { desc = 'Amend the last commit' } },
-              { 'n', 'ce', '<Cmd>Git commit --amend --no-edit<CR>', { desc = 'Amend the last commit without editting' } },
-              { 'n', 'gi', add_to_ignore, { desc = 'Add the current file to the .gitignore' } },
-              { 'n', 'gI', add_to_exclude, { desc = 'Add the current file to the .git/info/exclude' } },
+              { 'n', 'ce', '<Cmd>Git commit --amend --no-edit<CR>',      { desc = 'Amend the last commit without editting' } },
+              { 'n', 'gi', add_to_ignore,                                { desc = 'Add the current file to the .gitignore' } },
+              { 'n', 'gI', add_to_exclude,                               { desc = 'Add the current file to the .git/info/exclude' } },
             },
           },
           view = {
@@ -180,13 +180,24 @@ return {
     end,
   },
   {
-    "art-vasilyev/gerrit-blame.nvim",
-    dependencies = { "tpope/vim-fugitive" },
+    -- TODO: Try to merge back to master.
+    "omrisarig13/gerrit-blame.nvim",
+    event = 'VeryLazy',
+    dependencies = { "tpope/vim-fugitive", "lewis6991/gitsigns.nvim", "rbong/vim-flog" },
     config = function()
-      require("gerrit-blame").setup({
+      local function copy_url_to_clipboard(url)
+        vim.fn.setreg('+', url)
+      end
+
+      local gerrit_blame = require "gerrit-blame"
+      gerrit_blame.setup({
         gerrit_hosts = { "gerrit.ci.demant.com" },
         default_host = "gerrit.ci.demant.com",
+        fugitive_enabled = false,
+        open_in_browser_action = copy_url_to_clipboard,
       })
+      vim.keymap.set('n', '<leader>gR', gerrit_blame.open_gerrit,
+        { desc = 'Open [G]errit [R]eview for last commit of current line' })
     end,
   }
 }

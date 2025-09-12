@@ -1,7 +1,8 @@
 return {
 
   { -- Linting
-    'mfussenegger/nvim-lint',
+    -- TODO: Merge back to the original repo.
+    'omrisarig13/nvim-lint',
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       local lint = require 'lint'

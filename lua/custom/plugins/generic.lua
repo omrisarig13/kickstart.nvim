@@ -211,7 +211,7 @@ return {
       end, { desc = 'Snacks [G]it browse (remote)' })
     end,
   }, -- Snacks.nvim }}}
-  { -- PLenary.nvim {{{
+  {  -- PLenary.nvim {{{
     'nvim-lua/plenary.nvim',
     event = 'VeryLazy',
     config = function()
