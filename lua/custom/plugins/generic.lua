@@ -61,9 +61,19 @@ return {
       -- - gs<operator> - sort
       --
       -- replace is equivalent to 'inkarkat/vim-ReplaceWithRegister'
+      local sort_func = function(content, opts)
+        opts = vim.tbl_deep_extend('force', opts or {}, { compare_fun = function(a, b)
+          return string.lower(a or '') < string.lower(b or '')
+        end })
+        return MiniOperators.default_sort_func(content, opts)
+      end
+
       require('mini.operators').setup {
         replace = {
-          prefix = '<leader>r',
+          prefix = '<leader>e',
+        },
+        sort = {
+          func = sort_func
         },
       }
 

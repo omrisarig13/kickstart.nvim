@@ -93,15 +93,15 @@ return {
     cmd = { 'Hexed' },
     opts = {
       highlights = {
-        String  = "String",          -- ascii characters
-        Null    = "NonText",         -- null bytes
-        Newline = "SpecialChar",     -- newline characters(\n and \r)
-        Address = "Label",           -- the addresses at the beginning of lines
-        Byte    = "Identifier",      -- any other byte
-        Region  = "Visual",          -- context are in preview buffer
-        Char    = "Substitute",      -- character the cursor is on
+        String  = "String",      -- ascii characters
+        Null    = "NonText",     -- null bytes
+        Newline = "SpecialChar", -- newline characters(\n and \r)
+        Address = "Label",       -- the addresses at the beginning of lines
+        Byte    = "Identifier",  -- any other byte
+        Region  = "Visual",      -- context are in preview buffer
+        Char    = "Substitute",  -- character the cursor is on
       },
-      command = "Hexed",             -- the command used to invoke hexed
+      command = "Hexed",         -- the command used to invoke hexed
     }
   },
   {
@@ -122,7 +122,8 @@ return {
   },
   {
     'mfussenegger/nvim-dap',
-    dependencies = { "rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python", "nvim-neotest/nvim-nio" },
+    dependencies = { "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
+    -- dependencies = { "rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python", "nvim-neotest/nvim-nio" },
     cmd = { 'DapContinue', 'DapToggleBreakpoint', 'DapNew' },
     keys = {
       { '<leader>db', '<cmd>DapToggleBreakpoint<cr>', desc = '[D]ap toggle [B]reakpoint' },
@@ -187,7 +188,8 @@ return {
       }
 
       -- Dap Python setup
-      require('dap-python').setup('/home/omsi/.venv/bin/python')
+      -- TODO: Re-enable and re-install - currently installation is failing.
+      -- require('dap-python').setup('/home/omsi/.venv/bin/python')
 
       -- Dap UI Setup
       local dapui = require("dapui")

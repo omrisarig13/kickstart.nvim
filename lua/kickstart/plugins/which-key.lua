@@ -68,6 +68,9 @@ return {
         { '<leader>n',  group = 'Flash' }, -- Not a group, but saved to keep track.
         { '<leader>o',  group = 'Snacks' },
         { '<leader>p',  group = '[P]ersonal' },
+        { '<leader>po', group = '[P]ersonal c[O]nfiguration files' },
+        { '<leader>py', group = '[P]ersonal [Y]ank' },
+        { '<leader>pyn', group = '[P]ersonal [Y]ank [N]umbered' },
         { '<leader>s',  group = '[S]earch' },
         { '<leader>sg', group = '[S]earch [G]it' },
         { '<leader>t',  group = '[T]oggle/[T]ab' },
