@@ -1,12 +1,22 @@
 return {
 
   { -- Linting
+    -- TODO: Merge back to the original repo.
     'mfussenegger/nvim-lint',
     event = { 'BufReadPre', 'BufNewFile' },
     config = function()
       local lint = require 'lint'
       lint.linters_by_ft = {
-        markdown = { 'markdownlint' },
+        -- markdown = { 'markdownlint' },
+        markdown = { 'vale', 'markdownlint' },
+        -- text = { 'vale' },
+        rst = { 'rstcheck', 'rstlint', 'vale' },
+        json = { 'jsonlint' },
+        dockerfile = { 'hadolint' },
+        bash = { 'bash', 'shellcheck' },
+        gitcommit = { 'gitlint' },
+        python = { 'flake8', 'pylint' },
+        -- python = { 'flake8', 'pylint' },
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,

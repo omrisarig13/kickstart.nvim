@@ -1,0 +1,14 @@
+[general]
+extra-path=.gitlint_rules/user_rules.py
+
+[title-max-length]
+line-length=50
+
+[body-max-line-length]
+line-length=72
+
+[title-must-not-contain-word]
+words=we,our,i,me
+
+[body-must-not-contain-word]
+words=we,our,i,me
