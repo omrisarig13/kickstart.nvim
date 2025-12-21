@@ -8,8 +8,10 @@ vim.g.have_nerd_font = true
 
 require('custom.settings')
 require('custom.tmp_settings')
+require('custom.personal_commands')
 require('custom.demant')
 require('custom.basic_keymaps')
+require('custom.personal_keymaps')
 require('custom.basic_autocommands')
 
 -- [[ Install `lazy.nvim` plugin manager ]] {{{

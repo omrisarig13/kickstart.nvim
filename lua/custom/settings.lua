@@ -11,8 +11,7 @@ vim.o.mouse = ''
 vim.o.showmode = false
 
 -- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  OMSA: Decide whether this functionality makes sense as default.
+-- Schedule the setting after `UiEnter` because it can increase startup-time.
 vim.schedule(function()
   vim.o.clipboard = 'unnamedplus'
 end)
@@ -29,9 +28,6 @@ vim.o.smartcase = true
 
 -- Keep signcolumn on by default
 vim.o.signcolumn = 'yes'
-
--- Decrease update time
-vim.o.updatetime = 250
 
 -- Decrease mapped sequence wait time
 vim.o.timeoutlen = 300
@@ -72,3 +68,57 @@ vim.o.confirm = true
 -- Break the lines at end of window, not spliting words.
 vim.o.wrap = true
 vim.o.linebreak = true
+
+-- Set textwidth {{{
+-- Default to 79, override by filetype
+vim.o.textwidth = 79
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'c', 'cpp', 'python' },
+  callback = function()
+    vim.opt_local.textwidth = 120
+  end,
+})
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'rst' },
+  callback = function()
+    vim.opt_local.textwidth = 119
+  end,
+})
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'java' },
+  callback = function()
+    vim.opt_local.textwidth = 149
+  end,
+})
+
+-- Add a colored column at the end of wanted lines.
+vim.o.colorcolumn = '+1'
+-- Set textwidth }}}
+
+-- Update foldmethod to git files, so git commits are shown nicer
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'git',
+  callback = function()
+    vim.opt_local.foldmethod = 'syntax'
+  end,
+})
+
+-- tab options {{{
+-- Default to 4 spaces
+vim.o.expandtab = true
+vim.o.tabstop = 4
+vim.o.shiftwidth = 4
+vim.o.softtabstop = 4
+vim.o.shiftround = true
+
+-- Change to 2 spaces for certain filetypes
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'markdown', 'rst', 'xml', 'lua' },
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+  end,
+})
+-- tab options }}}
+
+-- vim: foldmethod=marker

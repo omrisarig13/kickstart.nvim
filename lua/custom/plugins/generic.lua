@@ -1,5 +1,5 @@
 return {
-  { -- Collection of various small independent plugins/modules {{{
+  { -- mini.nvim - Collection of various small independent plugins/modules {{{
     'echasnovski/mini.nvim',
     event = 'VeryLazy',
     config = function()
@@ -9,7 +9,7 @@ return {
       --  - va)  - [V]isually select [A]round [)]paren
       --  - yinq - [Y]ank [I]nside [N]ext [Q]uote
       --  - ci'  - [C]hange [I]nside [']quote
-      require('mini.ai').setup { n_lines = 500 }
+      require('mini.ai').setup()
 
       -- Add/delete/replace surroundings (brackets, quotes, etc.)
       --
@@ -34,14 +34,7 @@ return {
       vim.keymap.set('n', '<leader>iss', sessions.select, { desc = 'M[I]ni [S]ession [S]elect' })
       vim.keymap.set('n', '<leader>isd', function()
         sessions.delete(nil, { force = true })
-      end, { desc = 'M[I]ni [S]ession [D]edelet' })
-
-      -- Better around/inside handling.
-      --
-      -- 'wellle/targets.vim'
-      --
-      -- - dan) - [D]elete [A]round [N]next [)]Paren
-      require('mini.ai').setup()
+      end, { desc = 'M[I]ni [S]ession [D]elete' })
 
       -- Alignment plugin
       --
@@ -197,7 +190,7 @@ return {
       require('snacks').setup {
         bigfile = { enabled = true },
         dashboard = { enabled = true },
-        explorer = { enabled = true },
+        explorer = { enabled = false },
         indent = { enabled = true },
         input = { enabled = true },
         picker = { enabled = false },
@@ -209,19 +202,10 @@ return {
         words = { enabled = true },
       }
 
-      local snacks = require 'snacks'
-
-      vim.keymap.set('n', '<leader>os', function()
-        snacks.scratch()
-      end, { desc = 'Snacks [S]cratch' })
-      vim.keymap.set('n', '<leader>oc', snacks.scratch.select, { desc = 'Snacs s[c]ratch select' })
-      vim.keymap.set('n', '<leader>or', snacks.rename.rename_file, { desc = 'Snacks [R]ename' })
-      vim.keymap.set('n', '<leader>og', function()
-        snacks.gitbrowse()
-      end, { desc = 'Snacks [G]it browse (remote)' })
+      vim.keymap.set('n', '<leader>or', require('snacks').rename.rename_file, { desc = 'Snacks [R]ename' })
     end,
   }, -- Snacks.nvim }}}
-  {  -- PLenary.nvim {{{
+  {  -- Plenary.nvim {{{
     'nvim-lua/plenary.nvim',
     event = 'VeryLazy',
     config = function()

@@ -56,6 +56,7 @@ return {
       -- Document existing key chains
       spec = {
 
+        { '<leader>a',  group = 'Dem[A]nt' },
         { '<leader>c',  group = '[C]opilot' },
         { '<leader>d',  group = '[D]ap/t[D]o' },
         { '<leader>g',  group = '[G]it commands' },
@@ -71,10 +72,13 @@ return {
         { '<leader>po', group = '[P]ersonal c[O]nfiguration files' },
         { '<leader>py', group = '[P]ersonal [Y]ank' },
         { '<leader>pyn', group = '[P]ersonal [Y]ank [N]umbered' },
+        { '<leader>r', group = 'T[R]ee Sitter' },
         { '<leader>s',  group = '[S]earch' },
         { '<leader>sg', group = '[S]earch [G]it' },
         { '<leader>t',  group = '[T]oggle/[T]ab' },
         { '<leader>u',  group = 'Stat[U]s' },
+        { '<leader>x',  group = 'Trouble' },
+
       },
     },
   },

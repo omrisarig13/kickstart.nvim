@@ -1,5 +1,5 @@
 return {
-  { -- Autocompletion {{{
+  {
     'saghen/blink.cmp',
     event = 'VeryLazy',
     version = '1.*',
@@ -89,7 +89,7 @@ return {
             },
           },
         },
-        -- Display a preview of the selected item on the current line
+        -- Don't display a preview of the selected item on the current line
         ghost_text = { enabled = false },
       },
 
@@ -144,7 +144,6 @@ return {
       signature = { enabled = true },
     },
   },
-  -- Autocompletion }}}
 }
 
 -- vim: foldmethod=marker

@@ -1,14 +1,64 @@
 return {
+  { 'omrisarig13/vim-tab-movements', event = 'VeryLazy' },
+  'jeffkreeftmeijer/vim-numbertoggle',
+  { 'tpope/vim-abolish',             event = 'VeryLazy' },
   {
     'rcarriga/nvim-notify',
-    opts = { top_down = true },
+    config = function()
+      notify = require 'notify'
+      notify.setup {
+        top_down = true,
+        background_colour = "#000000",
+      }
+
+      vim.keymap.set('n', '<leader>nd', notify.dismiss, { desc = '[N]otifications [D]ismiss' })
+    end,
+  },
+  {
+    -- OMSA: Figure out what mappings are actually available, and whether
+    -- any more features are nice other than having the marks visible.
+    'chentoast/marks.nvim',
+    event = 'VeryLazy',
+    config = function()
+      require('marks').setup {
+        -- whether to map keybinds or not. default true
+        default_mappings = false,
+        mappings = {},
+      }
+    end,
+  },
+  {
+    'omrisarig13/mistake.nvim',
+    event = 'VeryLazy',
+    config = function()
+      local plugin = require 'mistake'
+      vim.defer_fn(function()
+        plugin.setup()
+      end, 500)
+
+      vim.keymap.set('n', '<leader>ma', plugin.add_entry, { desc = '[M]istake [A]dd entry' })
+      vim.keymap.set('n', '<leader>me', plugin.edit_entries, { desc = '[M]istake [E]dit entries' })
+      vim.keymap.set('n', '<leader>mc', plugin.add_entry_under_cursor, { desc = '[M]istake add [C]urrent word' })
+    end,
   },
   -- Lualine {{{
   -- Adds ~60ms load time...
   {
     'nvim-lualine/lualine.nvim',
-    dependencies = { 'nvim-tree/nvim-web-devicons', 'dpetka2001/noice.nvim', 'nvim-lua/plenary.nvim' },
+    dependencies = { 'folke/trouble.nvim', 'nvim-tree/nvim-web-devicons', 'dpetka2001/noice.nvim', 'nvim-lua/plenary.nvim' },
     config = function()
+      local trouble = require("trouble")
+      local symbols = trouble.statusline({
+        mode = "lsp_document_symbols",
+        groups = {},
+        title = false,
+        filter = { range = true },
+        format = "{kind_icon}{symbol.name:Normal}",
+        -- The following line is needed to fix the background color
+        -- Set it to the lualine section you want to use
+        hl_group = "lualine_c_normal",
+      })
+
       local path_from_root = {
         function()
           local Path = require 'plenary.path'
@@ -72,7 +122,7 @@ return {
         sections = {
           lualine_a = { 'mode' },
           lualine_b = { 'branch', 'diff', 'diagnostics' },
-          lualine_c = { path_from_root, { 'filename', icon = '' }, cwd_from_repo_root },
+          lualine_c = { path_from_root, { 'filename', icon = '' }, cwd_from_repo_root, {symbols.get, cond=symbols.has} },
           lualine_x = { 'encoding', 'fileformat', 'filetype' },
           lualine_y = {
             {
@@ -101,9 +151,9 @@ return {
   -- Noice {{{
   -- Adds a minimum of 60ms to startup, and sometimes up to 500ms????
   {
-    -- 'folke/noice.nvim',
-    'dpetka2001/noice.nvim',
-    branch = 'fix/msg_show.shell_out',
+    'folke/noice.nvim',
+    -- 'dpetka2001/noice.nvim',
+    -- branch = 'fix/msg_show.shell_out',
     event = 'VeryLazy',
     dependencies = {
       -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
@@ -135,6 +185,43 @@ return {
     end,
   },
   -- Noice }}}
+  {
+    "folke/trouble.nvim",
+    opts = {}, -- for default options, refer to the configuration section for custom setup.
+    cmd = "Trouble",
+    keys = {
+      {
+        "<leader>xX",
+        "<cmd>Trouble diagnostics toggle<cr>",
+        desc = "Diagnostics (Trouble)",
+      },
+      {
+        "<leader>xx",
+        "<cmd>Trouble diagnostics toggle filter.buf=0<cr>",
+        desc = "Buffer Diagnostics (Trouble)",
+      },
+      {
+        "<leader>xa",
+        "<cmd>Trouble symbols toggle focus=false<cr>",
+        desc = "Symbols (Trouble)",
+      },
+      {
+        "<leader>xb",
+        "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
+        desc = "LSP Definitions / references / ... (Trouble)",
+      },
+      {
+        "<leader>xl",
+        "<cmd>Trouble loclist toggle<cr>",
+        desc = "Location List (Trouble)",
+      },
+      {
+        "<leader>xq",
+        "<cmd>Trouble qflist toggle<cr>",
+        desc = "Quickfix List (Trouble)",
+      },
+    },
+  },
 }
 
 -- vim: ts=2 sts=2 sw=2 et foldmethod=marker

@@ -24,8 +24,8 @@ return {
       'davvid/telescope-git-grep.nvim',
       'debugloop/telescope-undo.nvim',
       'rcarriga/nvim-notify',
-      -- TODO: Also look at this one: https://github.com/aaronhallaert/advanced-git-search.nvim
       'aaronhallaert/advanced-git-search.nvim',
+      'folke/trouble.nvim',
     },
     config = function()
       -- Telescope is a fuzzy finder that comes with a lot of different things that
@@ -103,11 +103,15 @@ return {
             height = 0.80,
           },
           mappings = {
-            i = { ['<c-l>'] = focus_preview },
+            i = {
+              ['<c-l>'] = focus_preview,
+              ['<c-x>'] = require("trouble.sources.telescope").open
+            },
             n = {
               ['q'] = require('telescope.actions').close,
               ['<c-l>'] = focus_preview,
               ['<c-q>'] = require('telescope.actions').smart_send_to_qflist + require('telescope.actions').open_qflist,
+              ['<c-x>'] = require("trouble.sources.telescope").open
             },
           },
         },
@@ -167,29 +171,34 @@ return {
         }
       end
 
-      vim.keymap.set('n', '<leader>/', builtin.current_buffer_fuzzy_find, { desc = '[/] Fuzzily search in current buffer' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      -- Used
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader>s/', search_grep_local_files, { desc = '[S]earch [/] in Open Files' })
-      vim.keymap.set('n', '<leader>sa', builtin.search_history, { desc = '[S]earch se[A]rch history' })
-      vim.keymap.set('n', '<leader>sb', builtin.current_buffer_fuzzy_find, { desc = '[S]earch current [B]uffer' })
-      vim.keymap.set('n', '<leader>sc', search_files_in_buffer_dir, { desc = '[S]earch files in [C]current buffer dir' })
-      vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>se', builtin.live_grep, { desc = '[S]earch by gr[E]p' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
-            -- <leader>sg is reserved for git commands.
+      -- <leader>sg is reserved for git commands.
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
+      vim.keymap.set('n', '<leader>sn', search_nvim_config_files, { desc = '[S]earch [N]eovim files' })
+      vim.keymap.set('n', '<leader>so', require('telescope').extensions.notify.notify,
+        { desc = '[S]earch n[O]tifications' })
+      vim.keymap.set('n', '<leader>su', require('telescope').extensions.undo.undo, { desc = '[S]earch [U]ndo tree' })
+      vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
+      -- To start using
+      vim.keymap.set('n', '<leader>/', builtin.current_buffer_fuzzy_find,
+        { desc = '[/] Fuzzily search in current buffer' })
+      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader>sa', builtin.search_history, { desc = '[S]earch se[A]rch history' })
+      vim.keymap.set('n', '<leader>sc', search_files_in_buffer_dir, { desc = '[S]earch files in [C]current buffer dir' })
+      vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
+      vim.keymap.set('n', '<leader>sl', builtin.lsp_workspace_symbols, { desc = '[S]earch [L]sp workspace symbols' })
+      vim.keymap.set('n', '<leader>sm', builtin.command_history, { desc = '[S]earch co[M]mand history' })
+      vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
+      -- To decide
+      vim.keymap.set('n', '<leader>s/', search_grep_local_files, { desc = '[S]earch [/] in Open Files' })
       vim.keymap.set('n', '<leader>si', builtin.registers, { desc = '[S]earch reg[I]sters' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sm', builtin.command_history, { desc = '[S]earch co[M]mand history' })
-      vim.keymap.set('n', '<leader>sn', search_nvim_config_files, { desc = '[S]earch [N]eovim files' })
-      vim.keymap.set('n', '<leader>so', require('telescope').extensions.notify.notify, { desc = '[S]earch n[O]tifications' })
-      vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>st', require('git_grep').live_grep, { desc = '[S]earch by gi[T] grep' })
-      vim.keymap.set('n', '<leader>su', require('telescope').extensions.undo.undo, { desc = '[S]earch [U]ndo tree' })
       vim.keymap.set('n', '<leader>sv', builtin.vim_options, { desc = '[S]earch [V]im options' })
-      vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
 
       -- Not the nicest to have a global function described here, but I could
       -- not find a better way to invoke a command that is able to use the
@@ -202,28 +211,26 @@ return {
         }
       end
 
+      -- TODO: Keymaps are not working, which causes the plugin to do much less
+      -- than it could. Investigate later.
       local advanced_git_search = require('telescope').extensions.advanced_git_search
 
+      -- Used
+      -- To start using
       vim.keymap.set('n', '<leader>sgb', builtin.git_branches, { desc = '[S]earch [G]it [B]ranches' })
-      vim.keymap.set('n', '<leader>sgc', advanced_git_search.diff_branch_file, { desc = '[S]earch [G]it log [C]ontent' })
-      vim.keymap.set('n', '<leader>sgd', advanced_git_search.diff_branch_file, { desc = '[S]earch [G]it [D]iff for file' })
-      vim.keymap.set('n', '<leader>sgf', builtin.git_files, { desc = '[S]earch [G]it [F]iles' })
-      vim.keymap.set('n', '<leader>sgh', advanced_git_search.changed_on_branch, { desc = '[S]earch [G]it files c[h]anged in current branch' })
+      vim.keymap.set('n', '<leader>sgc', advanced_git_search.search_log_content,
+        { desc = '[S]earch [G]it log [C]ontent' })
+      vim.keymap.set('n', '<leader>sgd', advanced_git_search.diff_branch_file,
+        { desc = '[S]earch [G]it [D]iff for file' })
+      vim.keymap.set('n', '<leader>sgh', advanced_git_search.changed_on_branch,
+        { desc = '[S]earch [G]it files c[h]anged in current branch' })
       vim.keymap.set('n', '<leader>sgl', builtin.git_commits, { desc = '[S]earch [G]it [L]og (commits)' })
-      vim.keymap.set('n', '<leader>sgs', builtin.git_status, { desc = '[S]earch [G]it [S]tatus' })
       vim.keymap.set('n', '<leader>sgu', builtin.git_bcommits, { desc = '[S]earch [G]it b[U]ffer commits' })
-      vim.keymap.set('v', '<leader>sgu', '<esc><cmd>lua TelescopeRangedBcommit()<cr>', { desc = '[S]earch [G]it b[U]ffer commits' })
-
-      --[[
-      -- Slightly advanced example of overriding default behavior and theme
-      vim.keymap.set('n', '<leader>/', function()
-        -- You can pass additional configuration to Telescope to change the theme, layout, etc.
-        builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-          winblend = 10,
-          previewer = false,
-        })
-      end, { desc = '[/] Fuzzily search in current buffer' })
-      --]]
+      vim.keymap.set('v', '<leader>sgu', '<esc><cmd>lua TelescopeRangedBcommit()<cr>',
+        { desc = '[S]earch [G]it b[U]ffer commits' })
+      -- To decide
+      vim.keymap.set('n', '<leader>sgf', builtin.git_files, { desc = '[S]earch [G]it [F]iles' })
+      vim.keymap.set('n', '<leader>sgs', builtin.git_status, { desc = '[S]earch [G]it [S]tatus' })
     end,
   },
 }

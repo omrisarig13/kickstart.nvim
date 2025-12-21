@@ -14,12 +14,12 @@ return {
       },
     },
     opts = {
-      notify_on_error = false,
+      notify_on_error = true,
       format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { lua = true, kotlin = true, java = true, python = true, cpp = true }
+        local disable_filetypes = { lua = true, kotlin = true, java = true, python = true }
         if disable_filetypes[vim.bo[bufnr].filetype] then
           return nil
         else
@@ -40,7 +40,8 @@ return {
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
         -- java = { 'eclipse_format', 'tab_to_spaces_format' },
         -- java = { 'google-java-format', 'tab2_to_tab4_format' },
-        java = { 'configurable_java_format' },
+        -- java = { 'configurable_java_format' },
+        java = { 'clang-format' },
       },
       formatters = {
         eclipse_format = {

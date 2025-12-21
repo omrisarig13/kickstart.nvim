@@ -356,7 +356,7 @@ return {
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc', 'cpp', 'python', 'java', 'kotlin', 'rst', 'json' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -367,6 +367,7 @@ return {
         additional_vim_regex_highlighting = { 'ruby' },
       },
       indent = { enable = true, disable = { 'ruby' } },
+      incremental_selection = { enable = true },
     },
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
@@ -375,7 +376,156 @@ return {
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
+  {
+    'nvim-treesitter/nvim-treesitter-context',
+    lazy = false,
+    keys = {
+      { '<leader>rc', function() require("treesitter-context").go_to_context(vim.v.count1) end, desc = 'T[R]eesitter - Go to [C]ontext' },
+    },
+  },
+  {
+    'nvim-treesitter/nvim-treesitter-textobjects',
+    branch = 'main',
+    config = function()
+      -- configuration
+      require("nvim-treesitter-textobjects").setup {
+        select = {
+          -- Automatically jump forward to textobj, similar to targets.vim
+          lookahead = true,
+        },
+      }
+
+      -- keymaps
+      vim.keymap.set({ "x", "o" }, "af", function()
+        require "nvim-treesitter-textobjects.select".select_textobject("@function.outer", "textobjects")
+      end)
+      vim.keymap.set({ "x", "o" }, "if", function()
+        require "nvim-treesitter-textobjects.select".select_textobject("@function.inner", "textobjects")
+      end)
+      vim.keymap.set({ "x", "o" }, "ac", function()
+        require "nvim-treesitter-textobjects.select".select_textobject("@comment.outer", "textobjects")
+      end)
+      vim.keymap.set({ "x", "o" }, "ic", function()
+        require "nvim-treesitter-textobjects.select".select_textobject("@function.inner", "textobjects")
+      end)
+      vim.keymap.set("n", "<leader>rr", function()
+        require("nvim-treesitter-textobjects.swap").swap_next "@parameter.inner"
+      end)
+      vim.keymap.set("n", "<leader>rl", function()
+        require("nvim-treesitter-textobjects.swap").swap_previous "@parameter.outer"
+      end)
+    end
+
+  },
   -- Highlight, edit, and navigate code }}}
+  { -- Debug {{{
+    'mfussenegger/nvim-dap',
+    dependencies = { "rcarriga/nvim-dap-ui", "nvim-neotest/nvim-nio" },
+    -- dependencies = { "rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python", "nvim-neotest/nvim-nio" },
+    cmd = { 'DapContinue', 'DapToggleBreakpoint', 'DapNew' },
+    keys = {
+      { '<leader>db', '<cmd>DapToggleBreakpoint<cr>', desc = '[D]ap toggle [B]reakpoint' },
+      { '<leader>dn', '<cmd>DapNew<cr>',              desc = '[D]ap [N]ew session' },
+      { '<leader>ds', '<cmd>DapTerminate<cr>',        desc = '[D]ap [S]top' },
+    },
+    config = function()
+      local dap = require('dap')
+      dap.set_log_level('TRACE')
+
+      dap.adapters.gdb = {
+        type = "executable",
+        command = "gdb",
+        args = { "--interpreter=dap", "--eval-command", "set print pretty on" }
+      }
+
+      dap.configurations.c = {
+        -- {
+        --   name = "Launch",
+        --   type = "gdb",
+        --   request = "launch",
+        --   program = function()
+        --     return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        --   end,
+        --   cwd = "${workspaceFolder}",
+        --   stopAtBeginningOfMainSubprogram = true,
+        -- },
+        -- {
+        --   name = "Select and attach to process",
+        --   type = "gdb",
+        --   request = "attach",
+        --   program = function()
+        --     return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        --   end,
+        --   pid = function()
+        --     local name = vim.fn.input('Executable name (filter): ')
+        --     return require("dap.utils").pick_process({ filter = name })
+        --   end,
+        --   cwd = '${workspaceFolder}'
+        -- },
+        {
+          name = 'Attach to gdbserver :2331',
+          type = 'gdb',
+          request = 'attach',
+          target = 'localhost:2331',
+          program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+          end,
+          cwd = '${workspaceFolder}',
+          stopOnEntry = true,
+        },
+        {
+          name = 'Quantum: Hello Zephyr',
+          type = 'gdb',
+          request = 'attach',
+          target = 'localhost:2331',
+          program =
+          '/scratch/omsi/quantum/repo/obj/higgs/higgs_mcu/apps/hello_zephyr/hello_zephyr_package/package/zephyr_build/hello_zephyr/zephyr/zephyr.elf',
+          cwd = '${workspaceFolder}',
+          stopOnEntry = true,
+        },
+      }
+
+      -- Dap Python setup
+      -- TODO: Re-enable and re-install - currently installation is failing.
+      -- require('dap-python').setup('/home/omsi/.venv/bin/python')
+
+      -- Dap UI Setup
+      local dapui = require("dapui")
+
+      dapui.setup()
+
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated.dapui_config = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
+
+      -- Keymaps during debugging
+      dap.listeners.before.event_initialized.create_mapping = function()
+        vim.keymap.set('n', '<Enter>', dap.continue, { desc = 'Continue' })
+        vim.keymap.set('n', '<Down>', dap.step_over, { desc = 'Step over' })
+        vim.keymap.set('n', '<Up>', dap.restart_frame, { desc = 'Restart Frame' })
+        vim.keymap.set('n', '<Right>', dap.step_into, { desc = 'Step into' })
+        vim.keymap.set('n', '<Left>', dap.step_out, { desc = 'Step out' })
+        vim.keymap.set({ 'v', 'n' }, '<M-s>', dapui.eval, { desc = 'Evaluate expression under cursor' })
+      end
+      dap.listeners.before.event_terminated.create_mapping = function()
+        vim.keymap.del('n', '<Enter>')
+        vim.keymap.del('n', '<Down>')
+        vim.keymap.del('n', '<Up>')
+        vim.keymap.del('n', '<Right>')
+        vim.keymap.del('n', '<Left>')
+        vim.keymap.del({ 'v', 'n' }, '<M-s>')
+      end
+    end
+  }, -- Debug }}}
 }
 
 -- vim: foldmethod=marker
