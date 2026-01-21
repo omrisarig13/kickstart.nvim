@@ -59,4 +59,10 @@ require('lazy').setup({
 })
 -- [[ Configure and install plugins ]] }}}
 
+-- vim.lsp.config['xuda_ls'] = {
+--   cmd = { 'node', '/scratch/omsi/repos/xuda-language-server/server/dist/standalone.js', '--stdio' },
+--   filetypes = { 'xuda' },
+-- }
+-- vim.lsp.enable('xuda_ls')
+
 -- vim: foldmethod=marker
