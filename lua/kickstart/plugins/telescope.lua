@@ -162,6 +162,33 @@ return {
         builtin.find_files { cwd = utils.buffer_dir() }
       end
 
+      local search_in_files_from_given_type = function(file_type)
+        builtin.live_grep {
+          type_filter = file_type,
+          glob_pattern = "!rf_mcu/**",
+        }
+      end
+
+      local search_in_bash_files = function()
+        search_in_files_from_given_type('sh')
+      end
+
+      local search_in_c_files = function()
+        search_in_files_from_given_type('c')
+      end
+
+      local search_in_rst_files = function()
+        search_in_files_from_given_type('rst')
+      end
+
+      local search_in_java_files = function()
+        search_in_files_from_given_type('java')
+      end
+
+      local search_in_kotlin_files = function()
+        search_in_files_from_given_type('kotlin')
+      end
+
       local search_grep_local_files = function()
         -- It's also possible to pass additional configuration options.
         -- See `:help telescope.builtin.live_grep()` for information about particular keys
@@ -175,6 +202,11 @@ return {
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader>se', builtin.live_grep, { desc = '[S]earch by gr[E]p' })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+      vim.keymap.set('n', '<leader>stb', search_in_bash_files, { desc = '[S]earch text in [T]ype [B]ash' })
+      vim.keymap.set('n', '<leader>stc', search_in_c_files, { desc = '[S]earch text in [T]ype [C]' })
+      vim.keymap.set('n', '<leader>str', search_in_rst_files, { desc = '[S]earch text in [T]ype [R]ST' })
+      vim.keymap.set('n', '<leader>stj', search_in_java_files, { desc = '[S]earch text in [T]ype [J]ava' })
+      vim.keymap.set('n', '<leader>stk', search_in_kotlin_files, { desc = '[S]earch text in [T]ype [K]otlin' })
       -- <leader>sg is reserved for git commands.
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sn', search_nvim_config_files, { desc = '[S]earch [N]eovim files' })
@@ -197,7 +229,7 @@ return {
       vim.keymap.set('n', '<leader>si', builtin.registers, { desc = '[S]earch reg[I]sters' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
-      vim.keymap.set('n', '<leader>st', require('git_grep').live_grep, { desc = '[S]earch by gi[T] grep' })
+      -- vim.keymap.set('n', '<leader>stg', require('git_grep').live_grep, { desc = '[S]earch by gi[T] grep' })
       vim.keymap.set('n', '<leader>sv', builtin.vim_options, { desc = '[S]earch [V]im options' })
 
       -- Not the nicest to have a global function described here, but I could

@@ -134,6 +134,7 @@ return {
       { '<leader>gp', '<cmd>tabnew <bar> exec "Flog" <bar> G <bar> tabmove-1 <bar> DiffviewOpen <cr>', desc = 'Git [P]age',                        silent = true },
       { '<leader>gl', '<cmd>-tabnew <bar> Flog<cr>',                                                   desc = 'Git f[L]og' },
       { '<leader>gq', '<cmd>G commit --squash=<c-r>"<cr>',                                             desc = 'Git s[Q]uash (to unnamed register)' },
+      { '<leader>gh', '<cmd>DiffviewOpen HEAD~"<cr>',                                                  desc = 'Git DiffviewOpen of [H]ead (diffview of last commit).' },
     },
     dependencies = {
       'rbong/vim-flog',

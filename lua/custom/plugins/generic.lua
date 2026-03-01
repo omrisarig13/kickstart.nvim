@@ -55,9 +55,11 @@ return {
       --
       -- replace is equivalent to 'inkarkat/vim-ReplaceWithRegister'
       local sort_func = function(content, opts)
-        opts = vim.tbl_deep_extend('force', opts or {}, { compare_fun = function(a, b)
-          return string.lower(a or '') < string.lower(b or '')
-        end })
+        opts = vim.tbl_deep_extend('force', opts or {}, {
+          compare_fun = function(a, b)
+            return string.lower(a or '') < string.lower(b or '')
+          end
+        })
         return MiniOperators.default_sort_func(content, opts)
       end
 
@@ -200,6 +202,46 @@ return {
         scroll = { enabled = false },
         statuscolumn = { enabled = true },
         words = { enabled = true },
+        styles = {
+          terminal = {
+            bo = {
+              filetype = "snacks_terminal",
+            },
+            wo = {},
+            stack = true, -- when enabled, multiple split windows with the same position will be stacked together (useful for terminals)
+            keys = {
+              q = "hide",
+              gf = function(self)
+                local f = vim.fn.findfile(vim.fn.expand("<cfile>"), "**")
+                if f == "" then
+                  Snacks.notify.warn("No file under cursor")
+                else
+                  self:hide()
+                  vim.schedule(function()
+                    vim.cmd("e " .. f)
+                  end)
+                end
+              end,
+              term_normal = {
+                "<esc>",
+                function(self)
+                  self.esc_timer = self.esc_timer or (vim.uv or vim.loop).new_timer()
+                  if self.esc_timer:is_active() then
+                    self.esc_timer:stop()
+                    vim.cmd("stopinsert")
+                  else
+                    self.esc_timer:start(200, 0, vim.schedule_wrap(function()
+                      vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<esc>", true, false, true), "n", false)
+                    end))
+                  end
+                end,
+                mode = "t",
+                expr = true,
+                desc = "Double escape to normal mode",
+              },
+            },
+          }
+        }
       }
 
       vim.keymap.set('n', '<leader>or', require('snacks').rename.rename_file, { desc = 'Snacks [R]ename' })

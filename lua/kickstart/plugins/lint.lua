@@ -8,9 +8,11 @@ return {
       local lint = require 'lint'
       lint.linters_by_ft = {
         -- markdown = { 'markdownlint' },
-        markdown = { 'vale', 'markdownlint' },
+        -- markdown = { 'vale', 'markdownlint' },
+        markdown = { 'markdownlint' },
         -- text = { 'vale' },
         rst = { 'rstcheck', 'rstlint', 'vale' },
+        -- rst = { 'rstcheck', 'rstlint' },
         json = { 'jsonlint' },
         dockerfile = { 'hadolint' },
         bash = { 'bash', 'shellcheck' },
